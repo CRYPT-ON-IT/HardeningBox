@@ -71,7 +71,20 @@ elif tool == '3':
 
 elif tool == '4':
     # Add scrapped data to CSV file
-    pass
+    original_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
+    original_file = FileFunctions(original_filepath)
+    original_file.checkIfFileExistsAndReadable()
+    original_dataframe = original_file.readCsvFile()
+
+    adding_filepath = input('Which pdf scrapped data file should I look for (e.g. : filename.csv) : ')
+    adding_file = FileFunctions(adding_filepath)
+    adding_file.checkIfFileExistsAndReadable()
+    adding_dataframe = adding_file.readCsvFile()
+
+    csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
+    csv.AddScrappedDataToCsv()
+
+    print('\nScrapped data added successfully.')
 
 elif tool == '5':
     # Excel <-> CV convertion

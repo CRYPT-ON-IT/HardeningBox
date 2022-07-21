@@ -112,3 +112,36 @@ class UpdateMainCsv():
 
 
             self.original_dataframe.to_csv('linked_' + self.original_filepath)
+
+    def AddScrappedDataToCsv(self):
+        self.original_dataframe.insert(12,'Impact',None)
+        self.original_dataframe.insert(12,'Rationale',None)
+        self.original_dataframe.insert(12,'Description',None)
+        self.original_dataframe.insert(12,'Default Value (Scrapped)',None)
+        self.original_dataframe.insert(12,'Recommended Value (Scrapped)',None)
+
+        for index, policy in self.original_dataframe.iterrows():
+            search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == policy['ID']]
+
+            searchImpact = search['Impact'].values
+            if searchImpact.size > 0:
+                policy['Impact'] = searchImpact[0]
+
+            searchDescription = search['Description'].values
+            if searchDescription.size > 0:
+                policy['Description'] = searchDescription[0]
+
+            searchRationale = search['Rationale'].values
+            if searchRationale.size > 0:
+                policy['Rationale'] = searchRationale[0]
+            
+            searchRecVal = search['Recommended Value'].values
+            if searchRecVal.size > 0:
+                policy['Recommended Value (Scrapped)'] = searchRecVal[0]
+            
+            searchRecVal = search['Default Value'].values
+            if searchRecVal.size > 0:
+                policy['Default Value (Scrapped)'] = searchRecVal[0]
+
+        self.original_dataframe.to_csv(self.original_filepath, index=False)
+        print('\nOutput saved.')
