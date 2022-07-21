@@ -1,3 +1,6 @@
+from FileFunctions import *
+from UpdateMainCsv import *
+
 tool = input("""
 #################################################################################################################### _ 0 X #
 #                                                                                                                          #
@@ -32,7 +35,23 @@ Choose your tool (1->6): """)
 
 if tool == '1':
     # Add audit result to a CSV file
-    pass
+    original_filepath = input('Which base hardening file should I look for (e.g. : filename.csv) : ')
+    original_file = FileFunctions(original_filepath)
+    original_file.checkIfFileExistsAndReadable()
+    original_dataframe = original_file.readCsvFile()
+
+    adding_filepath = input('Which audit result file should I look for (e.g. : filename.csv) : ')
+    adding_file = FileFunctions(adding_filepath)
+    adding_file.checkIfFileExistsAndReadable()
+    adding_dataframe = adding_file.readCsvFile()
+
+    output_column_name = input('What will be the name of the output column (e.g. : context1) : ')
+    output_column_index = input('What will be the index of the output column (e.g. : 15) : ')
+
+    csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
+    csv.AddAuditResult()
+
+    print('\nAudit column added successfully.')
 
 elif tool == '2':
     # Add policies Microsoft Links to CSV
