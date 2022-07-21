@@ -107,7 +107,32 @@ elif tool == '4':
 
 elif tool == '5':
     # Excel <-> CV convertion
-    pass
+    choice = input('''
+Would you like to :
+
+1. Convert a Csv file to an Excel file 
+2. Convert an Excel file to a csv file
+
+(1 or 2) : 
+''')
+
+    if choice == '1':
+        csv_filepath = input('\nCsv file location : ')
+        csv_file = FileFunctions(csv_filepath)
+        csv_file.checkIfFileExistsAndReadable()
+        csv_file.convertCsv2Excel()
+
+    elif choice == '2':
+        excel_filepath = input('\nExcel file location : ')
+        excel_file = FileFunctions(excel_filepath)
+        excel_file.checkIfFileExistsAndReadable()
+        excel_file.convertExcel2Csv()
+
+    else:
+        print('Wrong choice.\n')
+        # throw
+    
+    print("File has been converted successfully.")
 
 elif tool == '6':
     # Transform CSV into PowerPoint slides

@@ -28,3 +28,15 @@ class FileFunctions():
         df = pd.read_csv(self.file, encoding='latin1')
         df = df.astype(str)
         return df
+
+    def convertCsv2Excel(self):
+        df = pd.read_csv(self.file)
+        df = df.fillna('')
+        output_excel = input("\nWhat's the name of the Excel output file ? : ")
+        df.to_excel(output_excel, index=False)
+
+    def convertExcel2Csv(self):
+        df = pd.read_excel(self.file)
+        df = df.fillna('')
+        output_csv = input("\nWhat's the name of the CSV output file ? : ")
+        df.to_csv(output_csv, index=False)
