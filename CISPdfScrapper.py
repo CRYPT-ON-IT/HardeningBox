@@ -1,6 +1,7 @@
 import re
 
 class CISPdfScrapper:
+    
     def __init__(self, pdf2txt, output_filepath):
         self.pdf2txt = pdf2txt
         self.output_filepath = output_filepath
