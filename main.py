@@ -136,7 +136,25 @@ Would you like to :
 
 elif tool == '6':
     # Transform CSV into PowerPoint slides
-    pass
+    hardening_filepath = input('Which base hardening file should I look for (e.g. : filename.csv) : ')
+    hardening_file = FileFunctions(hardening_filepath)
+    hardening_file.checkIfFileExistsAndReadable()
+    hardening_dataframe = hardening_file.readCsvFile()
+
+    powerpoint_filepath = input('Where should I output the PowerPoint (e.g. : filename.pptx) : ')
+
+    context = None
+    contexts = []
+    context_columns = []
+    while context != '':
+        context = input('If there is any (other) context column, enter the name : ')
+        if context != '':
+            contexts.append(context)
+            context_name = input('Please enter the name to show in the slides : ')
+            context_columns.append(context_name)
+
+    hardening_file.CreatePPTX(hardening_dataframe, contexts, context_columns, powerpoint_filepath)
+    print('PowerPoint has been successfully created.')
 
 else:
     print('\nTool selected not in list.')
