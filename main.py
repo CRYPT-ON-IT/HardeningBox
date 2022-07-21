@@ -1,5 +1,6 @@
 from FileFunctions import *
 from UpdateMainCsv import *
+from CISPdfScrapper import *
 
 tool = input("""
 #################################################################################################################### _ 0 X #
@@ -55,7 +56,7 @@ if tool == '1':
 
 elif tool == '2':
     # Add Microsoft Links to CSV (Beta)
-    hardening_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
+    hardening_filepath = input('\nWhich hardening file should I look for (e.g. : filename.csv) : ')
     hardening_file = FileFunctions(hardening_filepath)
     hardening_file.checkIfFileExistsAndReadable()
     hardening_dataframe = hardening_file.readCsvFile()
@@ -67,7 +68,25 @@ elif tool == '2':
 
 elif tool == '3':
     # Scrap policies from CIS pdf file (https://downloads.cisecurity.org/#/)
-    pass
+    input("""
+    In order to prepare this tool, you need to transfer pdf text data into a txt file.
+    To do that, you need to open your pdf with a pdf reader, and select the whole text (CTRL+A), it might take few seconds, and copy it (CTRL+C).
+    When the data is copied, you need to paste it in a file and save it as a txt file.
+    
+    You also need to remove every page until first policy (Recommandation part only),
+    then you can remove every data after the policies aswell (Appendix).
+    
+    yes(y) ? : """)
+
+    pdf2txt_filepath = input('\nWhich hardening file should I look for (e.g. : filename.csv) : ')
+    pdf2txt_file = FileFunctions(pdf2txt_filepath)
+    pdf2txt_file.checkIfFileExistsAndReadable()
+    pdf2txt_content = pdf2txt_file.readFile()
+
+    pdf2txt = CISPdfScrapper(pdf2txt_content)
+    pdf2txt.ScrapPdfData()
+
+    print('CIS pdf data has been scrapped successfullys.')
 
 elif tool == '4':
     # Add scrapped data to CSV file
