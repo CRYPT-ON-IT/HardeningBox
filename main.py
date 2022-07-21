@@ -25,7 +25,7 @@ This tool box allows you to use and transform Hardening Data. You will be able t
 This is based on CIS policies, so it might differ with other organizations.
 
     1. Add audit result to a CSV file
-    2. Add policies Microsoft Links to CSV
+    2. Add Microsoft Links to CSV (Beta)
     3. Scrap policies from CIS pdf file (https://downloads.cisecurity.org/#/)
     4. Add scrapped data to CSV file
     5. Excel <-> CSV convertion
@@ -54,8 +54,16 @@ if tool == '1':
     print('\nAudit column added successfully.')
 
 elif tool == '2':
-    # Add policies Microsoft Links to CSV
-    pass
+    # Add Microsoft Links to CSV (Beta)
+    hardening_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
+    hardening_file = FileFunctions(hardening_filepath)
+    hardening_file.checkIfFileExistsAndReadable()
+    hardening_dataframe = hardening_file.readCsvFile()
+
+    csv = UpdateMainCsv(hardening_dataframe, hardening_filepath)
+    csv.AddMicrosoftLinks()
+
+    print('\nMicrosoft Link and Possible Values columns added successfully.')
 
 elif tool == '3':
     # Scrap policies from CIS pdf file (https://downloads.cisecurity.org/#/)
