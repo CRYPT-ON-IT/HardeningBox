@@ -76,12 +76,14 @@ elif tool == '3':
     
     yes(y) ? : \033[0m""")
 
-    pdf2txt_filepath = input('\nWhich hardening file should I look for (e.g. : filename.csv) : ')
+    pdf2txt_filepath = input('\nWhich text file should I look for (e.g. : filename.txt) : ')
     pdf2txt_file = FileFunctions(pdf2txt_filepath)
     pdf2txt_file.checkIfFileExistsAndReadable()
     pdf2txt_content = pdf2txt_file.readFile()
 
-    pdf2txt = CISPdfScrapper(pdf2txt_content)
+    output_filepath = input('Where should we output the result (e.g. : output.csv) : ')
+
+    pdf2txt = CISPdfScrapper(pdf2txt_content, output_filepath)
     pdf2txt.ScrapPdfData()
 
     throw('CIS pdf data has been scrapped successfully.', 'low')
