@@ -31,6 +31,7 @@ class FileFunctions():
 
     def readCsvFile(self):
         df = pd.read_csv(self.file, encoding='latin1')
+        df = df.fillna('')
         df = df.astype(str)
         return df
 

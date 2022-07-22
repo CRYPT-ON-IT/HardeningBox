@@ -42,6 +42,7 @@ class UpdateMainCsv():
         self.original_dataframe.insert(10, 'MicrosoftLink', None)
         self.original_dataframe.insert(11, 'PossibleValues', None)
 
+        print('\033[93mFetching Microsoft website, it might take less than a minute...\n\033[0m')
         for index, policy in self.original_dataframe.iterrows():
             name = policy['Name']
             lower_name = name.lower()
@@ -124,10 +125,13 @@ class UpdateMainCsv():
 
                     self.original_dataframe.at[index, 'PossibleValues'] = possible_values
                 elif r.status_code not in [200, 404]:
-                    print('An error occured with unexpected status code ' + str(r.status_code))
+                    throw('An error occured with unexpected status code ' + str(r.status_code), "high")
 
-
-            self.original_dataframe.to_csv('linked_' + self.original_filepath)
+        output_filepath = input('How should we name the output file ? : ')
+        try:
+            self.original_dataframe.to_csv(output_filepath, index=False)
+        except:
+            throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
 
     def AddScrappedDataToCsv(self):
         self.original_dataframe.insert(12,'Impact',None)
