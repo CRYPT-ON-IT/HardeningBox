@@ -4,6 +4,8 @@
 
  You can, for example, transform a CSV file into PowerPoint Slides, or an Excel File.
 
+ You can even transform a pdf benchmark into a CSV file, wich is very useful.
+
  ## Requirements
 
 You can install python requirements by launching this command :
