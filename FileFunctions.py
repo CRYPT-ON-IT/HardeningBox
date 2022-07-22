@@ -15,7 +15,7 @@ class FileFunctions():
 
     def checkIfFileExistsAndReadable(self):
         if os.path.exists(self.file):
-            print('\nFile specified exists !')
+            print('\033[92mFile specified exists !\033[0m\n')
         else:
             throw('File specified not found, exiting.', 'high')
 

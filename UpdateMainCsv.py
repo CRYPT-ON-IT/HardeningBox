@@ -10,18 +10,33 @@ class UpdateMainCsv():
         self.adding_filepath = adding_filepath
 
     def AddAuditResult(self):
-        output_column = input('What will be the name of the output column (e.g. : context1) : ')
-        if output_column == '':
+        max_index = len(self.original_dataframe.columns)
+
+        output_column_name = input('What will be the name of the output column (e.g. : context1) : ')
+        if output_column_name == '':
             throw('No output column provided, exiting.', 'high')
 
-        self.original_dataframe.insert(15, output_column, None)
+        output_column_index = input('What will be the index of the output column (max : ' + str(max_index) + ') : ')
+        try:
+            output_column_index = int(output_column_index)
+        except:
+            throw('Output index is not an integers, exiting.', 'high')
+        if 0 < output_column_index > max_index:
+            throw('Output index out of range, exiting.', 'high')
+
+        self.original_dataframe.insert(output_column_index, output_column_name, None)
+
+        output_filepath = input('How should I name the output CSV ? : ')
 
         for index, policy in self.adding_dataframe.iterrows():
             policy_name = policy['Name']
             audit_result = policy['Result']
 
-            self.original_dataframe.loc[self.original_dataframe['Name'] == policy_name, output_column] = audit_result
-            self.original_dataframe.to_csv('compare_' + self.original_filepath, index=False)
+            self.original_dataframe.loc[self.original_dataframe['Name'] == policy_name, output_column_name] = audit_result
+        try:    
+            self.original_dataframe.to_csv(output_filepath, index=False)
+        except:
+            throw("Couldn't create CSV file, please check you have rights to wright in this folder, exiting.", "high")
 
     def AddMicrosoftLinks(self):
         self.original_dataframe.insert(10, 'MicrosoftLink', None)

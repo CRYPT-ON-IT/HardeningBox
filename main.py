@@ -47,9 +47,6 @@ if tool == '1':
     adding_file.checkIfFileExistsAndReadable()
     adding_dataframe = adding_file.readCsvFile()
 
-    output_column_name = input('What will be the name of the output column (e.g. : context1) : ')
-    output_column_index = input('What will be the index of the output column (e.g. : 15) : ')
-
     csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
     csv.AddAuditResult()
 
