@@ -7,6 +7,12 @@ class CISPdfScrapper:
         self.pdf2txt = pdf2txt
         self.output_filepath = output_filepath
 
+    """ 
+        This function will fetch a txt file containing a CIS Benchmark PDF
+        content, to retreive any information about policies (Default Value,
+        Recommended Value, Impact, Description, Rationale). It also will
+        transform the output to a CSV file.
+    """
     def ScrapPdfData(self):
         # Transform text into a list of policies, split is based on title : "1.1.1 (L1)" with a regex
         cis_policies = re.split(r"(\d+[\.\d+]+ \(L[1-3]\))",self.pdf2txt)

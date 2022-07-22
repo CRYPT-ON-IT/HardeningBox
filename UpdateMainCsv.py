@@ -9,6 +9,10 @@ class UpdateMainCsv():
         self.adding_dataframe = adding_dataframe
         self.adding_filepath = adding_filepath
 
+    """ 
+        This function will add a new column
+        from a csv to another by using pandas.
+    """
     def AddAuditResult(self):
         max_index = len(self.original_dataframe.columns)
 
@@ -38,6 +42,11 @@ class UpdateMainCsv():
         except:
             throw("Couldn't create CSV file, please check you have rights to wright in this folder, exiting.", "high")
 
+    """
+        This function will add a new column
+        to an hardening file with some Microsoft
+        Links to help the user.
+    """
     def AddMicrosoftLinks(self):
         self.original_dataframe.insert(10, 'MicrosoftLink', None)
         self.original_dataframe.insert(11, 'PossibleValues', None)
@@ -133,6 +142,10 @@ class UpdateMainCsv():
         except:
             throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
 
+    """
+        This function will add scrapped data
+        from a CIS Benchmark PDF to a CSV file.
+    """
     def AddScrappedDataToCsv(self):
         self.original_dataframe.insert(12,'Impact',None)
         self.original_dataframe.insert(12,'Rationale',None)

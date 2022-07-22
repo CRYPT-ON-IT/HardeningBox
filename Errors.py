@@ -1,3 +1,7 @@
+""" 
+    This function will throw an error
+    with colors and exit the program.
+"""
 def throw(message, level):
     switcher = { 
         "low": "\033[92m", # green

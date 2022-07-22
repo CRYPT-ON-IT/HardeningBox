@@ -13,12 +13,20 @@ class FileFunctions():
     def __init__(self, file):
         self.file = file
 
+    """ 
+        This function checks if a file exists and
+        if the program can read the content.
+    """
     def checkIfFileExistsAndReadable(self):
         if os.path.exists(self.file):
             print('\033[92mFile specified exists !\033[0m\n')
         else:
             throw('File specified not found, exiting.', 'high')
 
+    """ 
+        This function will return the content of
+        a normal file.
+    """
     def readFile(self):
         try:
             file = open(self.file, 'r')
@@ -29,29 +37,49 @@ class FileFunctions():
         
         return text
 
+    """ 
+        This function will return a dataframe (pandas)
+        containing the whole data of a CSV file.
+    """
     def readCsvFile(self):
         df = pd.read_csv(self.file, encoding='latin1')
         df = df.fillna('')
         df = df.astype(str)
         return df
 
+    """ 
+        This function will transform a CSV file
+        into an Excel file, using pandas.
+    """
     def convertCsv2Excel(self):
         df = pd.read_csv(self.file)
         df = df.fillna('')
         output_excel = input("\nWhat's the name of the Excel output file ? : ")
         df.to_excel(output_excel, index=False)
 
+    """ 
+        This function will transform an Excel file
+        into a CSV file, using pandas.
+    """
     def convertExcel2Csv(self):
         df = pd.read_excel(self.file)
         df = df.fillna('')
         output_csv = input("\nWhat's the name of the CSV output file ? : ")
         df.to_csv(output_csv, index=False)
 
+    """ 
+        This function will itterate over a PowerPoint
+        table to transform the content.
+    """
     def iter_cells(self, table):
         for row in table.rows:
             for cell in row.cells:
                 yield cell
     
+    """ 
+        This function will transform a CSV file
+        into PowerPoint Slides.
+    """
     def CreatePPTX(self, hardening_dataframe, contexts, contexts_columns, powerpoint_filepath):
 
         # Creating presentation
