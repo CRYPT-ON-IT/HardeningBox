@@ -145,12 +145,23 @@ elif tool == '6':
     context = None
     contexts = []
     context_columns = []
+    print("""\033[93m
+Actual Columns : 
+
+    • PossibleValues (Empty if column does not exists)
+    • DefaultValue
+    • RecomendedValue
+    • Comment (Empty)\033[0m""")
     while context != '':
-        context = input('If there is any (other) context column, enter the name : ')
-        if context != '':
+        context = input("\nIf there is any other column you would like to add, enter the name : ")
+        if context == '':
+            break
+        elif context in hardening_dataframe.columns:
             contexts.append(context)
             context_name = input('Please enter the name to show in the slides : ')
             context_columns.append(context_name)
+        else:
+            throw('Column not found in CSV, exiting.', 'high')
 
     hardening_file.CreatePPTX(hardening_dataframe, contexts, context_columns, powerpoint_filepath)
     throw('PowerPoint has been successfully created.', 'low')

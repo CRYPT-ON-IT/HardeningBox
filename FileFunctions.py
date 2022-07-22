@@ -87,7 +87,7 @@ class FileFunctions():
             shapes.title.height = Inches(1.5)
 
             cols = 2
-            rows = 5 + len(self.contexts)
+            rows = 5 + len(contexts)
             left = Inches(2.5)
             top = Inches(2.0)
             width = Inches(8.0)
@@ -105,7 +105,7 @@ class FileFunctions():
             table.rows[3].height = Inches(0.7) # Recommended value
             
             i = 0
-            while i < len(self.contexts):
+            while i < len(contexts):
                 table.rows[i + 4].height = Inches(0.7)
                 i+=1
 
@@ -128,19 +128,22 @@ class FileFunctions():
             table.cell(i + 4, 0).text = 'Comment'
 
             # Check possible values
-            possible_values = policy['PossibleValues']
-            possible_values = possible_values.replace('[','').replace(']','').replace("'",'').split(",")
-            final_text = ''
-            i=0
-            for possible_value in possible_values:
-                if possible_value == 'nan':
-                    final_text = ''
-                else:
-                    if i != len(possible_values)-1:
-                        final_text += '• ' + possible_value.strip() + '\n'
+            if 'PossibleValues' in hardening_dataframe.columns:
+                possible_values = policy['PossibleValues']
+                possible_values = possible_values.replace('[','').replace(']','').replace("'",'').split(",")
+                final_text = ''
+                i=0
+                for possible_value in possible_values:
+                    if possible_value == 'nan':
+                        final_text = ''
                     else:
-                        final_text += '• ' + possible_value.strip()
-                i+=1
+                        if i != len(possible_values)-1:
+                            final_text += '• ' + possible_value.strip() + '\n'
+                        else:
+                            final_text += '• ' + possible_value.strip()
+                    i+=1
+            else:
+                final_text = ''
 
             # Add cell data
             table.cell(1, 1).text = final_text
@@ -148,7 +151,7 @@ class FileFunctions():
             table.cell(3, 1).text = policy['RecommendedValue'] if policy['RecommendedValue'] != 'nan' else ''
 
             i = 0
-            while i < len(self.contexts):
+            while i < len(contexts):
                 table.cell(i + 4, 1).text = policy[contexts[i]] if policy[contexts[i]] != 'nan' else ''
                 i+=1
 
@@ -165,17 +168,18 @@ class FileFunctions():
                 cell.vertical_anchor = MSO_ANCHOR.MIDDLE
 
             # Add Microsoft Link
-            left = Inches(1.0)
-            top = Inches(8.2)
-            width = Inches(15.0)
-            height = Inches(0.5)
-            text_box = shapes.add_textbox(left, top, width, height)
-            paragraph = text_box.text_frame.paragraphs[0]
-            paragraph.alignment = PP_ALIGN.CENTER
-            run = paragraph.add_run()
-            run.text = policy['MicrosoftLink'] if not policy['MicrosoftLink'] == 'nan' else ''
-            run.hyperlink.address = policy['MicrosoftLink'] if not policy['MicrosoftLink'] == 'nan' else None
-            text_box.text_frame.word_wrap = True
+            if 'MicrosoftLink' in hardening_dataframe.columns:
+                left = Inches(1.0)
+                top = Inches(8.2)
+                width = Inches(15.0)
+                height = Inches(0.5)
+                text_box = shapes.add_textbox(left, top, width, height)
+                paragraph = text_box.text_frame.paragraphs[0]
+                paragraph.alignment = PP_ALIGN.CENTER
+                run = paragraph.add_run()
+                run.text = policy['MicrosoftLink'] if not policy['MicrosoftLink'] == 'nan' else ''
+                run.hyperlink.address = policy['MicrosoftLink'] if not policy['MicrosoftLink'] == 'nan' else None
+                text_box.text_frame.word_wrap = True
             
 
         prs.save(powerpoint_filepath)
