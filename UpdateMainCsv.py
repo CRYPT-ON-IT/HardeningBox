@@ -163,4 +163,8 @@ class UpdateMainCsv():
             if searchRecVal.size > 0:
                 policy['Default Value (Scrapped)'] = searchRecVal[0]
 
-        self.original_dataframe.to_csv(self.original_filepath, index=False)
+        output_filepath = input('How should we name the output file ? : ')
+        try:
+            self.original_dataframe.to_csv(output_filepath, index=False)
+        except:
+            throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
