@@ -151,7 +151,8 @@ Actual Columns :
     • PossibleValues (Empty if column does not exists)
     • DefaultValue
     • RecomendedValue
-    • Comment (Empty)\033[0m""")
+    • Comment (Empty)
+    • MicrosoftLink (Empty if column does not exists)\033[0m""")
     while context != '':
         context = input("\nIf there is any other column you would like to add, enter the name : ")
         if context == '':
