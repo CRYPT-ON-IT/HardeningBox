@@ -1,4 +1,5 @@
 import requests
+from Errors import throw
 
 class UpdateMainCsv():
 
@@ -11,7 +12,7 @@ class UpdateMainCsv():
     def AddAuditResult(self):
         output_column = input('What will be the name of the output column (e.g. : context1) : ')
         if output_column == '':
-            print('No output column provided.')
+            throw('No output column provided, exiting.', 'high')
 
         self.original_dataframe.insert(15, output_column, None)
 
@@ -82,7 +83,7 @@ class UpdateMainCsv():
                     full_link = microsoft_link + policy_name
                     self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
                 elif r.status_code not in [200, 404]:
-                    print('An error occured with unexpected status code ' + str(r.status_code))
+                    throw('An error occured with unexpected status code ' + str(r.status_code), 'high')
                 continue
 
             elif policy['Category'] in ['Account Policies', 'User Rights Assignment', 'Security Options']:
@@ -144,4 +145,3 @@ class UpdateMainCsv():
                 policy['Default Value (Scrapped)'] = searchRecVal[0]
 
         self.original_dataframe.to_csv(self.original_filepath, index=False)
-        print('\nOutput saved.')

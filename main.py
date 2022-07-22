@@ -1,6 +1,7 @@
 from FileFunctions import *
 from UpdateMainCsv import *
 from CISPdfScrapper import *
+from Errors import throw
 
 tool = input("""
 #################################################################################################################### _ 0 X #
@@ -52,7 +53,7 @@ if tool == '1':
     csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
     csv.AddAuditResult()
 
-    print('\nAudit column added successfully.')
+    throw('Audit column added successfully.', 'low')
 
 elif tool == '2':
     # Add Microsoft Links to CSV (Beta)
@@ -64,11 +65,11 @@ elif tool == '2':
     csv = UpdateMainCsv(hardening_dataframe, hardening_filepath)
     csv.AddMicrosoftLinks()
 
-    print('\nMicrosoft Link and Possible Values columns added successfully.')
+    throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
 elif tool == '3':
     # Scrap policies from CIS pdf file (https://downloads.cisecurity.org/#/)
-    input("""
+    input("""\033[93m
     In order to prepare this tool, you need to transfer pdf text data into a txt file.
     To do that, you need to open your pdf with a pdf reader, and select the whole text (CTRL+A), it might take few seconds, and copy it (CTRL+C).
     When the data is copied, you need to paste it in a file and save it as a txt file.
@@ -76,7 +77,7 @@ elif tool == '3':
     You also need to remove every page until first policy (Recommandation part only),
     then you can remove every data after the policies aswell (Appendix).
     
-    yes(y) ? : """)
+    yes(y) ? : \033[0m""")
 
     pdf2txt_filepath = input('\nWhich hardening file should I look for (e.g. : filename.csv) : ')
     pdf2txt_file = FileFunctions(pdf2txt_filepath)
@@ -86,7 +87,7 @@ elif tool == '3':
     pdf2txt = CISPdfScrapper(pdf2txt_content)
     pdf2txt.ScrapPdfData()
 
-    print('CIS pdf data has been scrapped successfullys.')
+    throw('CIS pdf data has been scrapped successfully.', 'low')
 
 elif tool == '4':
     # Add scrapped data to CSV file
@@ -103,7 +104,7 @@ elif tool == '4':
     csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
     csv.AddScrappedDataToCsv()
 
-    print('\nScrapped data added successfully.')
+    throw('Scrapped data added successfully.', 'low')
 
 elif tool == '5':
     # Excel <-> CV convertion
@@ -129,10 +130,9 @@ Would you like to :
         excel_file.convertExcel2Csv()
 
     else:
-        print('Wrong choice.\n')
-        # throw
+        throw('Wrong choice, exiting.', 'high')
     
-    print("File has been converted successfully.")
+    throw("File has been converted successfully.", "low")
 
 elif tool == '6':
     # Transform CSV into PowerPoint slides
@@ -154,14 +154,7 @@ elif tool == '6':
             context_columns.append(context_name)
 
     hardening_file.CreatePPTX(hardening_dataframe, contexts, context_columns, powerpoint_filepath)
-    print('PowerPoint has been successfully created.')
+    throw('PowerPoint has been successfully created.', 'low')
 
 else:
-    print('\nTool selected not in list.')
-
-
-print("""
-Thanks for using HardeningBox, see you later !
-
-##############################################################################################################################
-""")
+    throw('Tool selected not in list, exiting.', 'high')

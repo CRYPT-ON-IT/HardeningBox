@@ -6,6 +6,7 @@ from pptx.util import Inches
 from pptx.util import Pt
 from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.text import PP_ALIGN
+from Errors import throw
 
 class FileFunctions():
 
@@ -14,10 +15,9 @@ class FileFunctions():
 
     def checkIfFileExistsAndReadable(self):
         if os.path.exists(self.file):
-            print('File specified exists !')
+            print('\nFile specified exists !')
         else:
-            print('File specified not found.')
-            # throw
+            throw('File specified not found, exiting.', 'high')
 
     def readFile(self):
         try:
@@ -25,8 +25,7 @@ class FileFunctions():
             text = file.read()
             file.close()
         except:
-            print("Couldn't read file.")
-            # throw
+            throw("Couldn't read file, exiting.", "high")
         
         return text
 
