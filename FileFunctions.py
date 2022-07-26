@@ -1,4 +1,5 @@
 import os
+import sys
 import pandas as pd
 import collections.abc
 from pptx import Presentation
@@ -54,7 +55,14 @@ class FileFunctions():
     def convertCsv2Excel(self):
         df = pd.read_csv(self.file)
         df = df.fillna('')
-        output_excel = input("\nWhat's the name of the Excel output file ? : ")
+        output_excel = ''
+        output_excel_args = ['-o', '--output']
+        for output_excel_arg in output_excel_args:
+            for arg in sys.argv:
+                if output_excel_arg == arg:
+                    output_excel = sys.argv[sys.argv.index(arg)+1]
+        if output_excel == '':
+            output_excel = input("\nWhat's the name of the Excel output file ? : ")
         df.to_excel(output_excel, index=False)
 
     """ 
@@ -64,7 +72,14 @@ class FileFunctions():
     def convertExcel2Csv(self):
         df = pd.read_excel(self.file)
         df = df.fillna('')
-        output_csv = input("\nWhat's the name of the CSV output file ? : ")
+        output_csv = ''
+        output_csv_args = ['-o', '--output']
+        for output_csv_arg in output_csv_args:
+            for arg in sys.argv:
+                if output_csv_arg == arg:
+                    output_csv = sys.argv[sys.argv.index(arg)+1]
+        if output_csv == '':
+            output_csv = input("\nWhat's the name of the CSV output file ? : ")
         df.to_csv(output_csv, index=False)
 
     """ 
