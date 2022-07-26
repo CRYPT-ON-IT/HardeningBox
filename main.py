@@ -73,9 +73,6 @@ elif tool == '3':
     To do that, you need to open your pdf with a pdf reader, and select the whole text (CTRL+A), it might take few seconds, and copy it (CTRL+C).
     When the data is copied, you need to paste it in a file and save it as a txt file.
     
-    You also need to remove every page until first policy (Recommandation part only),
-    then you can remove every data after the policies aswell (Appendix).
-    
     yes(y) ? : \033[0m""")
 
     pdf2txt_filepath = input('\nWhich text file should I look for (e.g. : filename.txt) : ')

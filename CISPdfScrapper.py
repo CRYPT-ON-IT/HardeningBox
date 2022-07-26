@@ -7,6 +7,14 @@ class CISPdfScrapper:
         self.pdf2txt = pdf2txt
         self.output_filepath = output_filepath
 
+    """
+        This function will cut the txt to retrieve the policies only.
+    """
+    def LimitTxtToPoliciesOnly(self):
+        recommendation_cut = self.pdf2txt.split('\nRecommendations\n')[1] # keep everything after Recommendations
+        appendix_cut = recommendation_cut.split('\nAppendix: Summary Table\n')[0] # keep everything before Appendix
+        self.pdf2txt = appendix_cut
+
     """ 
         This function will fetch a txt file containing a CIS Benchmark PDF
         content, to retreive any information about policies (Default Value,
@@ -14,6 +22,7 @@ class CISPdfScrapper:
         transform the output to a CSV file.
     """
     def ScrapPdfData(self):
+        self.LimitTxtToPoliciesOnly()
         # Transform text into a list of policies, split is based on title : "1.1.1 (L1)" with a regex
         cis_policies = re.split(r"(\d+[\.\d+]+ \(L[1-3]\))",self.pdf2txt)
         cis_policies.pop(0)
