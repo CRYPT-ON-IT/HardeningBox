@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from FileFunctions import *
 from UpdateMainCsv import *
 from CISPdfScrapper import *
