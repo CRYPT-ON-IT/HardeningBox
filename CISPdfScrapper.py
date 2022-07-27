@@ -15,6 +15,48 @@ class CISPdfScrapper:
         appendix_cut = recommendation_cut.split('\nAppendix: Summary Table\n')[0] # keep everything before Appendix
         self.pdf2txt = appendix_cut
 
+    """
+        This function will identify the order of the different paragraphs.
+    """
+    def setParagraphsOrder(self, policy):
+        dict_index = {}
+
+        description=False
+        if 'Description:' in policy:
+            dict_index['Description:'] = policy.find('Description:')
+            description=True
+
+        rationale=False
+        if 'Rationale:' in policy:
+            dict_index['Rationale:'] = policy.find('Rationale:')
+            rationale=True
+
+
+        impact=False
+        if 'Impact:' in policy:
+            dict_index['Impact:'] = policy.find('Impact:')
+            impact=True
+
+        audit=False
+        if 'Audit:' in policy:
+            dict_index['Audit:'] = policy.find('Audit:')
+            audit=True
+
+        remediation=False
+        if 'Remediation:' in policy:
+            dict_index['Remediation:'] = policy.find('Remediation:')
+            remediation=True
+
+        defaultvalue=False
+        if 'Default Value:' in policy:
+            dict_index['Default Value:'] = policy.find('Default Value:')
+            defaultvalue=True
+
+        sorted_ = list({k: v for k, v in sorted(dict_index.items(), key=lambda item: item[1])})
+
+        return sorted_, description, rationale, impact, audit, remediation, defaultvalue
+
+
     """ 
         This function will fetch a txt file containing a CIS Benchmark PDF
         content, to retreive any information about policies (Default Value,
@@ -24,7 +66,7 @@ class CISPdfScrapper:
     def ScrapPdfData(self):
         self.LimitTxtToPoliciesOnly()
         # Transform text into a list of policies, split is based on title : "1.1.1 (L1)" with a regex
-        cis_policies = re.split(r"(\d+[\.\d+]+ \(L[1-3]\))",self.pdf2txt)
+        cis_policies = re.split(r"(\d+[\.\d+]+ .*\nProfile Applicability)",self.pdf2txt)
         cis_policies.pop(0)
         cis_policies = [''.join(cis_policies[i:i+2]) for i in range(0, len(cis_policies), 2)]
 
@@ -38,35 +80,96 @@ class CISPdfScrapper:
 
         for policy in cis_policies:
             policy = re.sub(r'\d* \| P a g e', '', policy) # Remove page strings
+            policy = policy.split('CIS Controls:')[0] # remove CIS Control part
 
-            id = re.findall(r'^\d+[\.\d]+ \(L[1-3]\)', policy)[0][:-5] # Rereive policy ID
+            id = re.findall(r'(^\d+[\.\d]+) ', policy)[0] # Rereive policy ID
 
-            try:
-                default_value = re.findall(r'Default Value:\n(.*)', policy)[0].replace("\"","\'").replace('\n','') # Retreive default value
-            except:
-                default_value = ''
+            sorted_, description, rationale, impact, audit, remediation, defaultvalue = self.setParagraphsOrder(policy)
 
-            try:
-                recommended_value = re.findall(r'(?<=The recommended state for this setting is).*', policy)[0].replace('\n','').replace("\"","\'").replace('Rationale:','') # Retreive recommended value
-                recommended_value = re.sub(r'^.+?(?=[0-9a-zA-Z])', '', recommended_value)
-            except:
+            if description:
+                description_index = sorted_.index('Description:')
+                if description_index >= len(sorted_)-1:
+                    next_val = r'\n(.*)'
+                else:
+                    next_val = sorted_[description_index+1]
+                
+                description_content = re.findall(r'Description:\n((.|\n)*?)'+next_val, policy)
+                if len(description_content) > 0:
+                    description_content = description_content[0][0].replace('\n','').replace("\"","\'") # Retreive description
+                else:
+                    description_content = ''
+                
+                recommended_value = re.findall(r'(?<=The recommended state for this setting is).*?(?=\.)', description_content) # Windows recommended value
+                if len(recommended_value) == 0:
+                    recommended_value = re.findall(r'(?=It is recommended).*?(?=\.)', description_content) # IIS recommended value
+                if len(recommended_value) != 0:
+                    recommended_value = recommended_value[0].replace('\n','').replace("\"","\'")
+                else:
+                    recommended_value = ""
+            else:
+                description_content = ''
                 recommended_value = ''
 
-            try:
-                impact = re.findall(r'Impact:\n((.|\n)*?)Audit:', policy)[0][0].replace('\n', '').replace("\"","\'") # Retreive impact
-            except:
-                impact = ''
+            if rationale:
+                rationale_index = sorted_.index('Rationale:')
+                if rationale_index >= len(sorted_)-1:
+                    next_val = r'\n(.*)'
+                else:
+                    next_val = sorted_[rationale_index+1]
+                rationale_content = re.findall(r'Rationale:\n((.|\n)*?)'+next_val, policy)
 
-            try:
-                description = re.findall(r'Description:\n((.|\n)*?)The recommended state for this setting is', policy)[0][0].replace('\n','').replace("\"","\'") # Retreive description
-            except:
-                description = ''
+                if len(rationale_content) > 0:
+                    rationale_content = rationale_content[0][0].replace('\n','').replace("\"","\'") # Retreive rationale
+                else:
+                    rationale_content = ''
+            else:
+                rationale_content = ''
 
-            try:    
-                rationale = re.findall(r'Rationale:\n((.|\n)*?)Impact:', policy)[0][0].replace('\n','').replace("\"","\'") # Retreive rationale
-            except:
-                rationale = ''
+            if audit:
+                audit_index = sorted_.index('Audit:')
+                if audit_index >= len(sorted_)-1:
+                    next_val = r'\n(.*)'
+                else:
+                    next_val = sorted_[audit_index+1]
+                #audit_content = re.findall(r'Audit:\n((.|\n)*?)'+next_val, policy)[0][0].replace('\n','').replace("\"","\'") # Retreive audit
+
+            if remediation:
+                remediation_index = sorted_.index('Remediation:')
+                if remediation_index >= len(sorted_)-1:
+                    next_val = r'\n(.*)'
+                else:
+                    next_val = sorted_[remediation_index+1]
+                #remediation_content = re.findall(r'Remediation:\n((.|\n)*?)'+next_val, policy)[0][0].replace('\n','').replace("\"","\'") # Retreive remediation
+
+            if impact:
+                impact_index = sorted_.index('Impact:')
+                if impact_index >= len(sorted_)-1:
+                    next_val = r'\n(.*)'
+                else:
+                    next_val = sorted_[impact_index+1]
+
+                impact_content = re.findall(r'Impact:\n((.|\n)*?)'+next_val, policy)
+                if len(impact_content) > 0:
+                    impact_content = impact_content[0][0].replace('\n','').replace("\"","\'") # Retreive impact
+                else:
+                    impact_content = ''
+            else:
+                impact_content = ''
+
+            if defaultvalue:
+                defaultvalue_index = sorted_.index('Default Value:')
+                if defaultvalue_index >= len(sorted_)-1:
+                    next_val = r'\n(.*)'
+                else:
+                    next_val = sorted_[defaultvalue_index+1]
+                defaultvalue_content = re.findall(r'Default Value:\n((.|\n)*?)'+next_val, policy)
+                if len(defaultvalue_content) > 0:
+                    defaultvalue_content = defaultvalue_content[0][0].replace('\n','').replace("\"","\'") # Retreive default value
+                else:
+                    defaultvalue_content = ''
+            else:
+                defaultvalue_content = ''
 
             f = open(self.output_filepath, 'a')
-            f.write('"'+id+'","'+default_value+'","'+recommended_value+'","'+impact+'","'+description+'","'+rationale+'"\n')
+            f.write('"'+id+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'\n')
             f.close()
