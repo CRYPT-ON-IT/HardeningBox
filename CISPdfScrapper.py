@@ -73,7 +73,7 @@ class CISPdfScrapper:
         # Add csv header to csv output
         try:
             f = open(self.output_filepath, 'w+')
-            f.write('"ID","Default Value","Recommended Value","Impact","Description","Rationale"\n')
+            f.write('"ID","Policy Name","Default Value","Recommended Value","Impact","Description","Rationale"\n')
             f.close()
         except:
             throw("Couldn't write to output filepath, please verify you have rights to write, exiting.", "highs")
@@ -83,6 +83,7 @@ class CISPdfScrapper:
             policy = policy.split('CIS Controls:')[0] # remove CIS Control part
 
             id = re.findall(r'(^\d+[\.\d]+) ', policy)[0] # Rereive policy ID
+            policy_name = re.findall(id+r' (.*)', policy)[0]
 
             sorted_, description, rationale, impact, audit, remediation, defaultvalue = self.setParagraphsOrder(policy)
 
@@ -171,5 +172,5 @@ class CISPdfScrapper:
                 defaultvalue_content = ''
 
             f = open(self.output_filepath, 'a')
-            f.write('"'+id+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'"\n')
+            f.write('"'+id+'","'+policy_name+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'"\n')
             f.close()
