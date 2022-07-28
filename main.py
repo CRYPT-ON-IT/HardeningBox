@@ -230,7 +230,7 @@ elif tool == '4':
 
     throw('Scrapped data added successfully.', 'low')
 
-# Excel <-> CV convertion
+# Excel <-> CSV convertion
 elif tool == '5':
     choice = ''
     if '--csv2xlsx' in sys.argv:
