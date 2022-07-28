@@ -95,7 +95,7 @@ class CISPdfScrapper:
                 
                 description_content = re.findall(r'Description:\n((.|\n)*?)'+next_val, policy)
                 if len(description_content) > 0:
-                    description_content = description_content[0][0].replace('\n','').replace("\"","\'") # Retreive description
+                    description_content = description_content[0][0].replace('\n','').replace("\"","\'").encode("ascii", "ignore").decode() # Retreive description
                 else:
                     description_content = ''
                 
@@ -103,7 +103,7 @@ class CISPdfScrapper:
                 if len(recommended_value) == 0:
                     recommended_value = re.findall(r'(?=It is recommended).*?(?=\.)', description_content) # IIS recommended value
                 if len(recommended_value) != 0:
-                    recommended_value = recommended_value[0].replace('\n','').replace("\"","\'")
+                    recommended_value = recommended_value[0].replace('\n','').replace("\"","\'").encode("ascii", "ignore").decode()
                 else:
                     recommended_value = ""
             else:
@@ -119,7 +119,7 @@ class CISPdfScrapper:
                 rationale_content = re.findall(r'Rationale:\n((.|\n)*?)'+next_val, policy)
 
                 if len(rationale_content) > 0:
-                    rationale_content = rationale_content[0][0].replace('\n','').replace("\"","\'") # Retreive rationale
+                    rationale_content = rationale_content[0][0].replace('\n','').replace("\"","\'").encode("ascii", "ignore").decode() # Retreive rationale
                 else:
                     rationale_content = ''
             else:
@@ -150,7 +150,7 @@ class CISPdfScrapper:
 
                 impact_content = re.findall(r'Impact:\n((.|\n)*?)'+next_val, policy)
                 if len(impact_content) > 0:
-                    impact_content = impact_content[0][0].replace('\n','').replace("\"","\'") # Retreive impact
+                    impact_content = impact_content[0][0].replace('\n','').replace("\"","\'").encode("ascii", "ignore").decode() # Retreive impact
                 else:
                     impact_content = ''
             else:
@@ -164,7 +164,7 @@ class CISPdfScrapper:
                     next_val = sorted_[defaultvalue_index+1]
                 defaultvalue_content = re.findall(r'Default Value:\n((.|\n)*?)'+next_val, policy)
                 if len(defaultvalue_content) > 0:
-                    defaultvalue_content = defaultvalue_content[0][0].replace('\n','').replace("\"","\'") # Retreive default value
+                    defaultvalue_content = defaultvalue_content[0][0].replace('\n','').replace("\"","\'").encode("ascii", "ignore").decode() # Retreive default value
                 else:
                     defaultvalue_content = ''
             else:
