@@ -21,29 +21,49 @@ def checkArguments():
                 -a, --audit-result : Add audit result to another csv
                     You should add -of or --original-file to specify the original file
                     You should add -af or --adding-file to specify the adding file
+                    Usage : 
+                        ./main.py --audit-result --original-file <file.csv> --adding-file <file.csv>
+                        ./main.py -a -of <file.csv> -af file.csv
 
                 -m, --msft-link : Add Microsoft policy column to a csv
                     You should add -of or --original-file to specify the original file
+                    Usage : 
+                        ./main.py --msft-link --original-file <file.csv>
+                        ./main.py -m -of <file.csv>
 
                 -s, --scrap : Scrap policies from a CIS Benchmark (pdf)
                     You should add -pdf or --pdf-to-txt to specify the pdf2txt file
                     You should add -o or --output to specify the output filepath
+                    Usage : 
+                        ./main.py --scrap --pdf-to-txt <file.txt> --output <file.csv>
+                        ./main.py -s -pdf <file.pdf> -o <file.csv>
 
                 -as, --add-scrapped : Add scrapped data to a csv file
                     You should add -of or --original-file to specify the original file
                     You should add -af or --adding-file to specify the adding file
+                    Usage : 
+                        ./main.py --add-scrapped --original-file <file.csv> --adding-file <file.csv>
+                        ./main.py -as -of <file.pdf> -af <file.csv>
 
                 -x, --xlsx : Convert CSV file and Excel File
                     You should add --csv2xlsx to transform a csv in an Excel file
                     or You should add --xlsx2csv to transform an Excel in a csv file
+                    Usage : 
+                        ./main.py --csv2xlsx --csv-file <file.csv> --output <file.xlsx>
+                        ./main.py --xlsx2csv --xlsx-file <file.xlsx> --output <file.csv>
 
                 -p, --pptx : Transform a csv file into PowerPoint slides
                     You should add -csv or --csv-file to specify the csv file
                     You should add -o or --output to specify the saved file location
+                    Usage : 
+                        ./main.py --pptx --csv-file <file.csv> --output <file.pptx>
+                        ./main.py --pptx -csv <file.csv> -o <file.pptx>
 
             Others :
                 -h, --help : show this help menu
-
+                Usage :
+                    ./main.py --help
+                    ./main.py -h
         --------------------------------------------------------------------
         """)
         throw('Help menu invoked !', 'low')
