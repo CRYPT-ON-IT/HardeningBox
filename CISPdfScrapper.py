@@ -171,5 +171,5 @@ class CISPdfScrapper:
                 defaultvalue_content = ''
 
             f = open(self.output_filepath, 'a')
-            f.write('"'+id+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'\n')
+            f.write('"'+id+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'"\n')
             f.close()
