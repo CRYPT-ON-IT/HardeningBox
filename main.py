@@ -1,17 +1,18 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 
-from FileFunctions import *
-from UpdateMainCsv import *
-from CISPdfScrapper import *
-from Errors import throw
 import sys
+from errors import throw
+from file_functions import FileFunctions
+from update_main_csv import UpdateMainCsv
+from cis_pdf_scrapper import CISPdfScrapper
 
-"""
-    This function will check all arguments given by the user and assign values to variables.
-    It permits to a user to not interact with the program (if all arguments are given).
-"""
-def checkArguments():
-    tool = ''
+
+def check_arguments():
+    """
+        This function will check all arguments given by the user and assign values to variables.
+        It permits to a user to not interact with the program (if all arguments are given).
+    """
+    #choosed_tool = False
     help_args = ['-h', '--help']
     if any(x in help_args for x in sys.argv):
         print("""
@@ -70,29 +71,36 @@ def checkArguments():
 
     audit_result_args = ['-a', '--audit-result']
     if any(x in audit_result_args for x in sys.argv):
-        tool = '1'
+        choosed_tool = '1'
+        return choosed_tool
 
     msft_link_args = ['-m', '--msft-link']
     if any(x in msft_link_args for x in sys.argv):
-        tool = '2'
+        choosed_tool = '2'
+        return choosed_tool
 
     scrap_args = ['-s', '--scrap']
     if any(x in scrap_args for x in sys.argv):
-        tool = '3'
+        choosed_tool = '3'
+        return choosed_tool
 
     add_scrapped_args = ['-as', '--add-scrapped']
     if any(x in add_scrapped_args for x in sys.argv):
-        tool = '4'
+        choosed_tool = '4'
+        return choosed_tool
 
     xlsx_args = ['-x', '--xlsx']
     if any(x in xlsx_args for x in sys.argv):
-        tool = '5'
+        choosed_tool = '5'
+        return choosed_tool
 
     pptx_args = ['-p', '--pptx']
     if any(x in pptx_args for x in sys.argv):
-        tool = '6'
+        choosed_tool = '6'
+        return choosed_tool
 
-    return tool
+    choosed_tool = False
+    return choosed_tool
 
 print("""
     #################################################################################################################### _ 0 X #
@@ -119,10 +127,10 @@ print("""
     
     """)
 
-tool = checkArguments()
+CHOOSED_TOOL = check_arguments()
 
-if tool == '':
-    tool = input("""
+if not CHOOSED_TOOL:
+    CHOOSED_TOOL = input("""
         1. Add audit result to a CSV file
         2. Add Microsoft Links to CSV (Beta)
         3. Scrap policies from CIS pdf file (https://downloads.cisecurity.org/#/)
@@ -133,7 +141,7 @@ if tool == '':
     Choose your tool (1->6): """)
 
 # Add audit result to a CSV file
-if tool == '1':
+if CHOOSED_TOOL == '1':
 
     original_filepath = ''
     original_filepath_args = ['-of', '--original-file']
@@ -144,8 +152,8 @@ if tool == '1':
     if original_filepath == '':
         original_filepath = input('Which base hardening file should I look for (e.g. : filename.csv) : ')
     original_file = FileFunctions(original_filepath)
-    original_file.checkIfFileExistsAndReadable()
-    original_dataframe = original_file.readCsvFile()
+    original_file.file_exists()
+    original_dataframe = original_file.read_csv_file()
 
     adding_filepath = ''
     adding_filepath_args = ['-af', '--adding-file']
@@ -154,10 +162,12 @@ if tool == '1':
             if adding_filepath_arg == arg:
                 adding_filepath = sys.argv[sys.argv.index(arg)+1]
     if adding_filepath == '':
-        adding_filepath = input('Which audit result file should I look for (e.g. : filename.csv) : ')
+        adding_filepath = input("""
+        Which audit result file should I look for (e.g. : filename.csv) : 
+        """)
     adding_file = FileFunctions(adding_filepath)
-    adding_file.checkIfFileExistsAndReadable()
-    adding_dataframe = adding_file.readCsvFile()
+    adding_file.file_exists()
+    adding_dataframe = adding_file.read_csv_file()
 
     csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
     csv.AddAuditResult()
@@ -165,7 +175,7 @@ if tool == '1':
     throw('Audit column added successfully.', 'low')
 
 # Add Microsoft Links to CSV (Beta)
-elif tool == '2':
+elif CHOOSED_TOOL == '2':
     hardening_filepath = ''
     hardening_filepath_args = ['-of', '--original-file']
     for hardening_filepath_arg in hardening_filepath_args:
@@ -175,8 +185,8 @@ elif tool == '2':
     if hardening_filepath == '':
         hardening_filepath = input('\nWhich hardening file should I look for (e.g. : filename.csv) : ')
     hardening_file = FileFunctions(hardening_filepath)
-    hardening_file.checkIfFileExistsAndReadable()
-    hardening_dataframe = hardening_file.readCsvFile()
+    hardening_file.file_exists()
+    hardening_dataframe = hardening_file.read_csv_file()
 
     csv = UpdateMainCsv(hardening_dataframe, hardening_filepath)
     csv.AddMicrosoftLinks()
@@ -184,7 +194,7 @@ elif tool == '2':
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
 # Scrap policies from CIS pdf file (https://downloads.cisecurity.org/#/)
-elif tool == '3':
+elif CHOOSED_TOOL == '3':
     if len(sys.argv) == 0:
         input("""\033[93m
     In order to prepare this tool, you need to transfer pdf text data into a txt file.
@@ -202,8 +212,8 @@ elif tool == '3':
     if pdf2txt_filepath == '':
         pdf2txt_filepath = input('\nWhich text file should I look for (e.g. : filename.txt) : ')
     pdf2txt_file = FileFunctions(pdf2txt_filepath)
-    pdf2txt_file.checkIfFileExistsAndReadable()
-    pdf2txt_content = pdf2txt_file.readFile()
+    pdf2txt_file.file_exists()
+    pdf2txt_content = pdf2txt_file.read_file()
 
     output_filepath = ''
     output_filepath_args = ['-o', '--output']
@@ -220,7 +230,7 @@ elif tool == '3':
     throw('CIS pdf data has been scrapped successfully.', 'low')
 
 # Add scrapped data to CSV file
-elif tool == '4':
+elif CHOOSED_TOOL == '4':
     original_filepath = ''
     original_filepath_args = ['-of', '--original-file']
     for original_filepath_arg in original_filepath_args:
@@ -230,8 +240,8 @@ elif tool == '4':
     if original_filepath == '':
         original_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
     original_file = FileFunctions(original_filepath)
-    original_file.checkIfFileExistsAndReadable()
-    original_dataframe = original_file.readCsvFile()
+    original_file.file_exists()
+    original_dataframe = original_file.read_csv_file()
 
     adding_filepath = ''
     adding_filepath_args = ['-af', '--adding-file']
@@ -242,8 +252,8 @@ elif tool == '4':
     if adding_filepath == '':
         adding_filepath = input('Which pdf scrapped data file should I look for (e.g. : filename.csv) : ')
     adding_file = FileFunctions(adding_filepath)
-    adding_file.checkIfFileExistsAndReadable()
-    adding_dataframe = adding_file.readCsvFile()
+    adding_file.file_exists()
+    adding_dataframe = adding_file.read_csv_file()
 
     csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
     csv.AddScrappedDataToCsv()
@@ -251,15 +261,15 @@ elif tool == '4':
     throw('Scrapped data added successfully.', 'low')
 
 # Excel <-> CSV convertion
-elif tool == '5':
-    choice = ''
+elif CHOOSED_TOOL == '5':
+    CHOICE = ''
     if '--csv2xlsx' in sys.argv:
-        choice = '1'
+        CHOICE = '1'
     elif '--xlsx2csv' in sys.argv:
-        choice = '2'
+        CHOICE = '2'
 
-    if choice == '':
-        choice = input('''
+    if CHOICE == '':
+        CHOICE = input('''
 Would you like to :
 
 1. Convert a Csv file to an Excel file 
@@ -268,7 +278,7 @@ Would you like to :
 (1 or 2) : 
 ''')
 
-    if choice == '1':
+    if CHOICE == '1':
         csv_filepath = ''
         csv_filepath_args = ['-csv', '--csv-file']
         for csv_filepath_arg in csv_filepath_args:
@@ -278,10 +288,10 @@ Would you like to :
         if csv_filepath == '':
             csv_filepath = input('\nCsv file location : ')
         csv_file = FileFunctions(csv_filepath)
-        csv_file.checkIfFileExistsAndReadable()
-        csv_file.convertCsv2Excel()
+        csv_file.file_exists()
+        csv_file.convert_csv_2_excel()
 
-    elif choice == '2':
+    elif CHOICE == '2':
         excel_filepath = ''
         excel_filepath_args = ['-xlsx', '--xlsx-file']
         for excel_filepath_arg in excel_filepath_args:
@@ -291,16 +301,15 @@ Would you like to :
         if excel_filepath == '':
             excel_filepath = input('\nExcel file location : ')
         excel_file = FileFunctions(excel_filepath)
-        excel_file.checkIfFileExistsAndReadable()
-        excel_file.convertExcel2Csv()
+        excel_file.file_exists()
+        excel_file.convert_excel_2_csv()
 
     else:
-        throw('Wrong choice, exiting.', 'high')
-    
+        throw('Wrong choice, exiting.', 'high')    
     throw("File has been converted successfully.", "low")
 
 # Transform CSV into PowerPoint slides
-elif tool == '6':
+elif CHOOSED_TOOL == '6':
     hardening_filepath = ''
     hardening_filepath_args = ['-csv', '--csv-file']
     for hardening_filepath_arg in hardening_filepath_args:
@@ -308,10 +317,12 @@ elif tool == '6':
             if hardening_filepath_arg == arg:
                 hardening_filepath = sys.argv[sys.argv.index(arg)+1]
     if hardening_filepath == '':
-        hardening_filepath = input('Which base hardening file should I look for (e.g. : filename.csv) : ')
+        hardening_filepath = input("""
+        Which base hardening file should I look for (e.g. : filename.csv) :
+        """)
     hardening_file = FileFunctions(hardening_filepath)
-    hardening_file.checkIfFileExistsAndReadable()
-    hardening_dataframe = hardening_file.readCsvFile()
+    hardening_file.file_exists()
+    hardening_dataframe = hardening_file.read_csv_file()
 
     powerpoint_filepath = ''
     powerpoint_filepath_args = ['-o', '--output']
@@ -320,7 +331,9 @@ elif tool == '6':
             if powerpoint_filepath_arg == arg:
                 powerpoint_filepath = sys.argv[sys.argv.index(arg)+1]
     if powerpoint_filepath == '':
-        powerpoint_filepath = input('Where should I output the PowerPoint (e.g. : filename.pptx) : ')
+        powerpoint_filepath = input("""
+        Where should I output the PowerPoint (e.g. : filename.pptx) : 
+        """)
 
     context = None
     contexts = []
@@ -344,7 +357,8 @@ Actual Columns :
         else:
             throw('Column not found in CSV, exiting.', 'high')
 
-    hardening_file.CreatePPTX(hardening_dataframe, contexts, context_columns, powerpoint_filepath)
+    hardening_file.create_powerpoint(
+        hardening_dataframe, contexts, context_columns, powerpoint_filepath)
     throw('PowerPoint has been successfully created.', 'low')
 
 else:

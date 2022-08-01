@@ -1,29 +1,38 @@
 import requests
-from Errors import throw
+from errors import throw
 
 class UpdateMainCsv():
+    """
+        This class will updatet csv
+        by adding diffrent columns.
+    """
 
-    def __init__(self, original_dataframe, original_filepath, adding_dataframe = None, adding_filepath = None):
+    def __init__(self, original_dataframe, original_filepath,
+     adding_dataframe = None, adding_filepath = None):
         self.original_dataframe = original_dataframe
         self.original_filepath = original_filepath
         self.adding_dataframe = adding_dataframe
         self.adding_filepath = adding_filepath
 
-    """ 
-        This function will add a new column
-        from a csv to another by using pandas.
-    """
-    def AddAuditResult(self):
+    def add_audit_result(self):
+        """
+            This function will add a new column
+            from a csv to another by using pandas.
+        """
         max_index = len(self.original_dataframe.columns)
 
-        output_column_name = input('What will be the name of the output column (e.g. : context1) : ')
+        output_column_name = input("""
+        What will be the name of the output column (e.g. : context1) : 
+        """)
         if output_column_name == '':
             throw('No output column provided, exiting.', 'high')
 
-        output_column_index = input('What will be the index of the output column (max : ' + str(max_index) + ') : ')
+        output_column_index = input("""
+        What will be the index of the output column (max : ' + str(max_index) + ') : 
+        """)
         try:
             output_column_index = int(output_column_index)
-        except:
+        except ValueError:
             throw('Output index is not an integers, exiting.', 'high')
         if 0 < output_column_index > max_index:
             throw('Output index out of range, exiting.', 'high')
@@ -42,12 +51,12 @@ class UpdateMainCsv():
         except:
             throw("Couldn't create CSV file, please check you have rights to wright in this folder, exiting.", "high")
 
-    """
-        This function will add a new column
-        to an hardening file with some Microsoft
-        Links to help the user.
-    """
-    def AddMicrosoftLinks(self):
+    def add_microsoft_links(self):
+        """
+            This function will add a new column
+            to an hardening file with some Microsoft
+            Links to help the user.
+        """
         self.original_dataframe.insert(10, 'MicrosoftLink', None)
         self.original_dataframe.insert(11, 'PossibleValues', None)
 
@@ -142,11 +151,11 @@ class UpdateMainCsv():
         except:
             throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
 
-    """
-        This function will add scrapped data
-        from a CIS Benchmark PDF to a CSV file.
-    """
-    def AddScrappedDataToCsv(self):
+    def add_scrapped_data_to_csv(self):
+        """
+            This function will add scrapped data
+            from a CIS Benchmark PDF to a CSV file.
+        """
         self.original_dataframe.insert(12,'Impact',None)
         self.original_dataframe.insert(12,'Rationale',None)
         self.original_dataframe.insert(12,'Description',None)

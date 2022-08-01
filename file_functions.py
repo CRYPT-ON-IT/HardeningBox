@@ -1,58 +1,60 @@
 import os
 import sys
 import pandas as pd
-import collections.abc
-from pptx import Presentation
-from pptx.util import Inches
 from pptx.util import Pt
+from pptx.util import Inches
+from pptx import Presentation
+from errors import throw
 from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.text import PP_ALIGN
-from Errors import throw
 
 class FileFunctions():
+    """
+        This class will read and check
+        files for further use.
+    """
 
     def __init__(self, file):
         self.file = file
 
-    """ 
-        This function checks if a file exists and
-        if the program can read the content.
-    """
-    def checkIfFileExistsAndReadable(self):
+    def file_exists(self):
+        """
+            This function checks if a file exists and
+            if the program can read the content.
+        """
         if os.path.exists(self.file):
             print('\033[92mFile specified exists !\033[0m\n')
         else:
             throw('File specified not found, exiting.', 'high')
 
-    """ 
-        This function will return the content of
-        a normal file.
-    """
-    def readFile(self):
+    def read_file(self):
+        """
+            This function will return the content of
+            a normal file.
+        """
         try:
-            file = open(self.file, 'r')
+            file = open(self.file, 'r', encoding='utf-8')
             text = file.read()
             file.close()
-        except:
-            throw("Couldn't read file, exiting.", "high")
-        
+        except OSError:
+            throw("Couldn't read file, exiting.", "high")       
         return text
 
-    """ 
-        This function will return a dataframe (pandas)
-        containing the whole data of a CSV file.
-    """
-    def readCsvFile(self):
+    def read_csv_file(self):
+        """
+            This function will return a dataframe (pandas)
+            containing the whole data of a CSV file.
+        """
         df = pd.read_csv(self.file, encoding='latin1')
         df = df.fillna('')
         df = df.astype(str)
         return df
 
-    """ 
-        This function will transform a CSV file
-        into an Excel file, using pandas.
-    """
-    def convertCsv2Excel(self):
+    def convert_csv_2_excel(self):
+        """
+            This function will transform a CSV file
+            into an Excel file, using pandas.
+        """
         df = pd.read_csv(self.file)
         df = df.fillna('')
         output_excel = ''
@@ -65,11 +67,11 @@ class FileFunctions():
             output_excel = input("\nWhat's the name of the Excel output file ? : ")
         df.to_excel(output_excel, index=False)
 
-    """ 
-        This function will transform an Excel file
-        into a CSV file, using pandas.
-    """
-    def convertExcel2Csv(self):
+    def convert_excel_2_csv(self):
+        """
+            This function will transform an Excel file
+            into a CSV file, using pandas.
+        """
         df = pd.read_excel(self.file)
         df = df.fillna('')
         output_csv = ''
@@ -82,21 +84,21 @@ class FileFunctions():
             output_csv = input("\nWhat's the name of the CSV output file ? : ")
         df.to_csv(output_csv, index=False)
 
-    """ 
-        This function will itterate over a PowerPoint
-        table to transform the content.
-    """
     def iter_cells(self, table):
+        """
+            This function will itterate over a PowerPoint
+            table to transform the content.
+        """
         for row in table.rows:
             for cell in row.cells:
                 yield cell
-    
-    """ 
-        This function will transform a CSV file
-        into PowerPoint Slides.
-    """
-    def CreatePPTX(self, hardening_dataframe, contexts, contexts_columns, powerpoint_filepath):
 
+    def create_powerpoint(self, hardening_dataframe: pd.DataFrame, contexts: list
+    , contexts_columns: list, powerpoint_filepath: str):
+        """
+            This function will transform a CSV file
+            into PowerPoint Slides.
+        """
         # Creating presentation
         prs = Presentation()
         slide_size = (16, 9)
@@ -173,7 +175,7 @@ class FileFunctions():
             # Check possible values
             if 'PossibleValues' in hardening_dataframe.columns:
                 possible_values = policy['PossibleValues']
-                possible_values = possible_values.replace('[','').replace(']','').replace("'",'').split(",")
+                possible_values.replace('[','').replace(']','').replace("'",'').split(",")
                 final_text = ''
                 i=0
                 for possible_value in possible_values:

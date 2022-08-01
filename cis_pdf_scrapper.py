@@ -1,5 +1,5 @@
 import re
-from Errors import throw
+from errors import throw
 
 class CISPdfScrapper:
     
