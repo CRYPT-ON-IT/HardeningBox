@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 import sys
-from errors import throw
+from Errors import throw
 from file_functions import FileFunctions
 from update_main_csv import UpdateMainCsv
 from cis_pdf_scrapper import CISPdfScrapper
