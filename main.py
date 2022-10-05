@@ -170,7 +170,7 @@ if CHOOSED_TOOL == '1':
     adding_dataframe = adding_file.read_csv_file()
 
     csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
-    csv.AddAuditResult()
+    csv.add_audit_result()
 
     throw('Audit column added successfully.', 'low')
 
@@ -189,7 +189,7 @@ elif CHOOSED_TOOL == '2':
     hardening_dataframe = hardening_file.read_csv_file()
 
     csv = UpdateMainCsv(hardening_dataframe, hardening_filepath)
-    csv.AddMicrosoftLinks()
+    csv.add_microsoft_links()
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
@@ -256,7 +256,7 @@ elif CHOOSED_TOOL == '4':
     adding_dataframe = adding_file.read_csv_file()
 
     csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
-    csv.AddScrappedDataToCsv()
+    csv.add_scrapped_data_to_csv()
 
     throw('Scrapped data added successfully.', 'low')
 
