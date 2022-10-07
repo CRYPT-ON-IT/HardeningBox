@@ -2,4 +2,4 @@ pandas
 openpyxl
 requests
 python-pptx
-collections
+collection
