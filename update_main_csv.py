@@ -1,5 +1,5 @@
 import requests
-from errors import throw
+from Errors import throw
 
 class UpdateMainCsv():
     """

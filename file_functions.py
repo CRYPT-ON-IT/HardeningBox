@@ -4,7 +4,7 @@ import pandas as pd
 from pptx.util import Pt
 from pptx.util import Inches
 from pptx import Presentation
-from errors import throw
+from Errors import throw
 from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.text import PP_ALIGN
 
