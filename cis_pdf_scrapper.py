@@ -15,6 +15,19 @@ class CISPdfScrapper:
         appendix_cut = recommendation_cut.split('\nAppendix: Summary Table\n')[0] # keep everything before Appendix
         self.pdf2txt = appendix_cut
 
+
+    """
+        This function will get the policy level from its name
+    """
+    def ParsePolicyName(self, policy_name):
+        # Get level 
+        final_level = ""
+        possible_levels = ['(L1)','(L2)','(NG)']
+        for level in possible_levels:
+            if level in policy_name:
+                final_level = level 
+        return final_level 
+
     """
         This function will identify the order of the different paragraphs.
     """
@@ -73,7 +86,7 @@ class CISPdfScrapper:
         # Add csv header to csv output
         try:
             f = open(self.output_filepath, 'w+')
-            f.write('"ID","Policy Name","Default Value","Recommended Value","Impact","Description","Rationale"\n')
+            f.write('"ID","Level","Policy Name","Default Value","Recommended Value","Impact","Description","Rationale"\n')
             f.close()
         except:
             throw("Couldn't write to output filepath, please verify you have rights to write, exiting.", "highs")
@@ -82,7 +95,7 @@ class CISPdfScrapper:
             policy = re.sub(r'\d* \| P a g e', '', policy) # Remove page strings
             policy = policy.split('CIS Controls:')[0] # remove CIS Control part
 
-            id = re.findall(r'(^\d+[\.\d]+) ', policy)[0] # Rereive policy ID
+            id = re.findall(r'(^\d+[\.\d]+) ', policy)[0] # Retreive policy ID
             policy_name = re.findall(id+r' (.*)', policy)[0]
 
             sorted_, description, rationale, impact, audit, remediation, defaultvalue = self.setParagraphsOrder(policy)
@@ -171,6 +184,11 @@ class CISPdfScrapper:
             else:
                 defaultvalue_content = ''
 
+            # parse policy name
+            level = self.ParsePolicyName(policy_name)
+
             f = open(self.output_filepath, 'a')
-            f.write('"'+id+'","'+policy_name+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'"\n')
+            f.write('"'+id+'","'+level+'","'+policy_name+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'"\n')
             f.close()
+
+        
