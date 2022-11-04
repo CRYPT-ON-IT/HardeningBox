@@ -169,7 +169,18 @@ if CHOOSED_TOOL == '1':
     adding_file.file_exists()
     adding_dataframe = adding_file.read_csv_file()
 
-    csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
+    output_filepath = ''
+    output_filepath_args = ['-o', '--output']
+    for output_filepath_arg in output_filepath_args:
+        for arg in sys.argv:
+            if output_filepath_arg == arg:
+                output_filepath = sys.argv[sys.argv.index(arg)+1]
+    if output_filepath == '':
+        output_filepath = input("""
+        How should we name the output file ? :  
+        """)
+
+    csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath, output_filepath)
     csv.add_audit_result()
 
     throw('Audit column added successfully.', 'low')
@@ -255,7 +266,18 @@ elif CHOOSED_TOOL == '4':
     adding_file.file_exists()
     adding_dataframe = adding_file.read_csv_file()
 
-    csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath)
+    output_filepath = ''
+    output_filepath_args = ['-o', '--output']
+    for output_filepath_arg in output_filepath_args:
+        for arg in sys.argv:
+            if output_filepath_arg == arg:
+                output_filepath = sys.argv[sys.argv.index(arg)+1]
+    if output_filepath == '':
+        output_filepath = input("""
+        How should we name the output file ? :  
+        """)
+
+    csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath, output_filepath)
     csv.add_scrapped_data_to_csv()
 
     throw('Scrapped data added successfully.', 'low')
