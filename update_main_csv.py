@@ -165,6 +165,22 @@ class UpdateMainCsv():
 
         for index, policy in self.original_dataframe.iterrows():
             search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == policy['ID']]
+            # Checking ID
+            if search['Level'].values.size == 0:
+                id = policy['ID']
+                id = id.split('.')
+                id.pop()
+                id = '.'.join(id)
+                policy['ID'] = id
+                search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == id]
+
+            # Checking ID 2
+            if search['Level'].values.size == 0:
+                id = policy['ID']
+                id = id.split('.')
+                id.pop()
+                id = '.'.join(id)
+                search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == id]
 
             searchImpact = search['Impact'].values
             if searchImpact.size > 0:
