@@ -28,7 +28,7 @@ class UpdateMainCsv():
             throw('No output column provided, exiting.', 'high')
 
         output_column_index = input("""
-        What will be the index of the output column (max : ' + str(max_index) + ') : 
+        What will be the index of the output column (max : """ + str(max_index) + """) :
         """)
         try:
             output_column_index = int(output_column_index)
@@ -161,6 +161,7 @@ class UpdateMainCsv():
         self.original_dataframe.insert(12,'Description',None)
         self.original_dataframe.insert(12,'Default Value (Scrapped)',None)
         self.original_dataframe.insert(12,'Recommended Value (Scrapped)',None)
+        self.original_dataframe.insert(12,'Level',None)
 
         for index, policy in self.original_dataframe.iterrows():
             search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == policy['ID']]
@@ -181,9 +182,13 @@ class UpdateMainCsv():
             if searchRecVal.size > 0:
                 policy['Recommended Value (Scrapped)'] = searchRecVal[0]
             
-            searchRecVal = search['Default Value'].values
-            if searchRecVal.size > 0:
-                policy['Default Value (Scrapped)'] = searchRecVal[0]
+            searchDefVal = search['Default Value'].values
+            if searchDefVal.size > 0:
+                policy['Default Value (Scrapped)'] = searchDefVal[0]
+                
+            searchLevel = search['Level'].values
+            if searchLevel.size > 0:
+                policy['Level'] = searchLevel[0]
 
         output_filepath = input('How should we name the output file ? : ')
         try:
