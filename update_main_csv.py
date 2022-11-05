@@ -168,20 +168,22 @@ class UpdateMainCsv():
             search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == policy['ID']]
             # Checking ID
             if search['Level'].values.size == 0:
-                id = policy['ID']
-                id = id.split('.')
-                id.pop()
-                id = '.'.join(id)
-                policy['ID'] = id
-                search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == id]
+                id_1 = policy['ID']
+                id_1 = id_1.split('.')
+                id_1.pop()
+                id_1 = '.'.join(id_1)
+                search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == id_1]
 
             # Checking ID 2
             if search['Level'].values.size == 0:
-                id = policy['ID']
-                id = id.split('.')
-                id.pop()
-                id = '.'.join(id)
-                search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == id]
+                id_2 = id_1
+                id_2 = id_2.split('.')
+                id_2.pop()
+                id_2 = '.'.join(id_2)
+                search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == id_2]
+
+            if search['Level'].values.size == 0:
+                print('\033[93mWarning: Unable to get data from '+policy['ID']+' in scrapped content.\033[0m\n')
 
             searchImpact = search['Impact'].values
             if searchImpact.size > 0:
