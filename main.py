@@ -26,11 +26,11 @@ def check_arguments():
                         ./main.py --audit-result --original-file <file.csv> --adding-file <file.csv>
                         ./main.py -a -of <file.csv> -af file.csv
 
-                -m, --msft-link : Add Microsoft policy column to a csv
+                -l, --msft-link : Add Microsoft policy column to a csv
                     You should add -of or --original-file to specify the original file
                     Usage : 
                         ./main.py --msft-link --original-file <file.csv>
-                        ./main.py -m -of <file.csv>
+                        ./main.py -l -of <file.csv>
 
                 -s, --scrap : Scrap policies from a CIS Benchmark (pdf)
                     You should add -pdf or --pdf-to-txt to specify the pdf2txt file
@@ -60,6 +60,14 @@ def check_arguments():
                         ./main.py --pptx --csv-file <file.csv> --output <file.pptx>
                         ./main.py --pptx -csv <file.csv> -o <file.pptx>
 
+                -m, --merge-2-csv : Merge 2 csv files and remove duplicates by "Names"
+                    You must add -f1 or --first-file to specify the first csv file
+                    You must add -f2 or --second-file to specify the second csv file
+                    You should add -o or --output to specify the saved file location
+                    Usage : 
+                        ./main.py -m --first-file <file1.csv> --second-file <file2.csv>
+                        ./main.py --merge-2-csv --first-file <file1.csv> --second-file <file2.csv> --output <output.csv>
+
             Others :
                 -h, --help : show this help menu
                 Usage :
@@ -74,7 +82,7 @@ def check_arguments():
         choosed_tool = '1'
         return choosed_tool
 
-    msft_link_args = ['-m', '--msft-link']
+    msft_link_args = ['-l', '--msft-link']
     if any(x in msft_link_args for x in sys.argv):
         choosed_tool = '2'
         return choosed_tool
@@ -97,6 +105,11 @@ def check_arguments():
     pptx_args = ['-p', '--pptx']
     if any(x in pptx_args for x in sys.argv):
         choosed_tool = '6'
+        return choosed_tool
+
+    pptx_args = ['-m', '--merge-2-csv']
+    if any(x in pptx_args for x in sys.argv):
+        choosed_tool = '7'
         return choosed_tool
 
     choosed_tool = False
@@ -137,8 +150,9 @@ if not CHOOSED_TOOL:
         4. Add scrapped data to CSV file
         5. Excel <-> CSV convertion
         6. Transform CSV into PowerPoint slides
+        7. Merge 2 csv files and remove duplicates by "Names"
 
-    Choose your tool (1->6): """)
+    Choose your tool (1->7): """)
 
 # Add audit result to a CSV file
 if CHOOSED_TOOL == '1':
@@ -360,6 +374,46 @@ Actual Columns :
     hardening_file.create_powerpoint(
         hardening_dataframe, contexts, context_columns, powerpoint_filepath)
     throw('PowerPoint has been successfully created.', 'low')
+
+# Add scrapped data to CSV file
+elif CHOOSED_TOOL == '7':
+    first_filepath = ''
+    first_filepath_args = ['-f1', '--first-file']
+    for first_filepath_arg in first_filepath_args:
+        for arg in sys.argv:
+            if first_filepath_arg == arg:
+                first_filepath = sys.argv[sys.argv.index(arg)+1]
+    if first_filepath == '':
+        first_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
+    first_file = FileFunctions(first_filepath)
+    first_file.file_exists()
+    first_dataframe = first_file.read_csv_file()
+
+    second_filepath = ''
+    second_filepath_args = ['-f1', '--second-file']
+    for second_filepath_arg in second_filepath_args:
+        for arg in sys.argv:
+            if second_filepath_arg == arg:
+                second_filepath = sys.argv[sys.argv.index(arg)+1]
+    if second_filepath == '':
+        second_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
+    second_file = FileFunctions(second_filepath)
+    second_file.file_exists()
+    second_dataframe = second_file.read_csv_file()
+
+    output_filepath = ''
+    output_filepath_args = ['-o', '--output']
+    for output_filepath_arg in output_filepath_args:
+        for arg in sys.argv:
+            if output_filepath_arg == arg:
+                output_filepath = sys.argv[sys.argv.index(arg)+1]
+    if output_filepath == '':
+        output_filepath = input('Where should we output the result (e.g. : output.csv) : ')
+
+    csv = UpdateMainCsv(first_dataframe, first_filepath, second_dataframe, second_filepath, output_filepath)
+    csv.merge_two_csv()
+
+    throw('Scrapped data added successfully.', 'low')
 
 else:
     throw('Tool selected not in list, exiting.', 'high')
