@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 from Errors import throw
 
 class UpdateMainCsv():
@@ -211,5 +212,29 @@ class UpdateMainCsv():
 
         try:
             self.original_dataframe.to_csv(self.output_filepath, index=False)
+        except:
+            throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
+
+    def merge_two_csv(self):
+        """
+            This function will merge two csv files
+            by adding diffrent policies.
+        """
+
+        first_dataframe = self.original_dataframe
+        second_dataframe = self.adding_dataframe
+
+        frames = [first_dataframe, second_dataframe]
+        new_dataframe = pd.concat(frames)
+        count1 = len(new_dataframe.index)
+        # we should to keep policy with defined level 
+        new_dataframe = new_dataframe.drop_duplicates(subset=["Name"], keep='first')
+        #print(new_dataframe[new_dataframe.duplicated(subset=["Name"], keep=False)][['Name','Level']])
+        new_dataframe = new_dataframe.sort_values("Category")
+        count2 = len(new_dataframe.index)
+
+        print("Total of policies : ",count1, '--->', "reduced to : ", count2)
+        try:
+            new_dataframe.to_csv(self.output_filepath, index=False)
         except:
             throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
