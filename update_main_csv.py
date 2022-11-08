@@ -41,7 +41,8 @@ class UpdateMainCsv():
 
         self.original_dataframe.insert(output_column_index, output_column_name, None)
 
-        output_filepath = input('How should I name the output CSV ? : ')
+        if self.output_filepath == "":
+            self.output_filepath = input('How should I name the output CSV ? : ')
 
         for index, policy in self.adding_dataframe.iterrows():
             policy_name = policy['Name']
@@ -49,7 +50,7 @@ class UpdateMainCsv():
 
             self.original_dataframe.loc[self.original_dataframe['Name'] == policy_name, output_column_name] = audit_result
         try:    
-            self.original_dataframe.to_csv(output_filepath, index=False)
+            self.original_dataframe.to_csv(self.output_filepath, index=False)
         except:
             throw("Couldn't create CSV file, please check you have rights to wright in this folder, exiting.", "high")
 
