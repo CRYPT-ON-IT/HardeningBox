@@ -68,6 +68,12 @@ def check_arguments():
                         ./main.py -m --first-file <file1.csv> --second-file <file2.csv>
                         ./main.py --merge-2-csv --first-file <file1.csv> --second-file <file2.csv> --output <output.csv>
 
+                -t, --trace : Convert Excel trace file to CSV applicable per context
+                    You must add -tf or --trace-file to specify the Excel trace file
+                    Usage :
+                        ./main.py -t -tf <trace_file.xlsx>
+                        ./main.py --trace --trace-file <trace_file.xlsx>
+
             Others :
                 -h, --help : show this help menu
                 Usage :
@@ -107,9 +113,14 @@ def check_arguments():
         choosed_tool = '6'
         return choosed_tool
 
-    pptx_args = ['-m', '--merge-2-csv']
-    if any(x in pptx_args for x in sys.argv):
+    mrg_args = ['-m', '--merge-2-csv']
+    if any(x in mrg_args for x in sys.argv):
         choosed_tool = '7'
+        return choosed_tool
+    
+    trc_args = ['-tf', '--trace-file']
+    if any(x in trc_args for x in sys.argv):
+        choosed_tool = '8'
         return choosed_tool
 
     choosed_tool = False
@@ -151,8 +162,9 @@ if not CHOOSED_TOOL:
         5. Excel <-> CSV convertion
         6. Transform CSV into PowerPoint slides
         7. Merge 2 csv files and remove duplicates by "Names"
+        8. Create CSV contexts applicable files from Excel trace file 
 
-    Choose your tool (1->7): """)
+    Choose your tool (1->8): """)
 
 # Add audit result to a CSV file
 if CHOOSED_TOOL == '1':
@@ -436,6 +448,52 @@ elif CHOOSED_TOOL == '7':
     csv.merge_two_csv()
 
     throw('Scrapped data added successfully.', 'low')
+
+# Create CSV from trace file
+elif CHOOSED_TOOL == '8':
+    tracefile_filepath = ''
+    tracefile_filepath_args = ['-tf', '--trace-file']
+    for tracefile_filepath_arg in tracefile_filepath_args:
+        for arg in sys.argv:
+            if tracefile_filepath_arg == arg:
+                tracefile_filepath = sys.argv[sys.argv.index(arg)+1]
+    if tracefile_filepath == '':
+        tracefile_filepath = input('Which trace file should I look for (e.g. : filename.xlsx) : ')
+    tracefile_file = FileFunctions(tracefile_filepath)
+    tracefile_file.file_exists()
+    
+    # load Excel sheets
+    df_all_policies, df_contexts = tracefile_file.read_xlsx_tracefile()
+
+    contexts_columns = df_contexts.columns.values.tolist()
+
+    # count contexts
+    nb_contexts = 0
+    for column in contexts_columns:
+        if column.startswith("Context-"):
+            nb_contexts+=1
+    if nb_contexts == 0:
+        throw("No contexts were found.", "high")
+
+    # set the first row has header
+    df_contexts.columns = df_contexts.iloc[0]
+    df_contexts = df_contexts[1:]
+
+    # Check if policy has a workshop attributed
+    ws_policies = df_contexts[df_contexts["Ateliers"]!="_"]
+
+    # add contexts with fixed value to a list
+    contexts = []
+    for context in range(nb_contexts):
+        set_policies = ws_policies[ws_policies["Context"+str(context+1)+" - Fixed Value"]!="to check"]
+        contexts.append(set_policies)
+
+    result = tracefile_file.create_applicable_csv(contexts, df_all_policies)
+
+    if result:
+        throw('Applicable CSV created successfully.', 'low')
+    else:
+        throw("Couldn't create CSV files.", "high")
 
 else:
     throw('Tool selected not in list, exiting.', 'high')
