@@ -389,10 +389,13 @@ elif CHOOSED_TOOL == '6':
     print("""\033[93m
 Actual Columns : 
 
+    • Name
+    • Level (Empty if column does not exists)
+    • Severity
     • PossibleValues (Empty if column does not exists)
     • DefaultValue
     • RecomendedValue
-    • Comment (Empty)
+    • Description (Empty if column does not exists)
     • MicrosoftLink (Empty if column does not exists)\033[0m""")
     while context != '':
         context = input("\nIf there is any other column you would like to add, enter the name : ")

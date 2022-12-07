@@ -7,6 +7,8 @@ from pptx import Presentation
 from Errors import throw
 from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.text import PP_ALIGN
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.dml.color import RGBColor
 
 class FileFunctions():
     """
@@ -130,27 +132,130 @@ class FileFunctions():
 
         # Creating policies slides 
         for index, policy in hardening_dataframe.iterrows():
-            tab_slide_layout = prs.slide_layouts[5]
+            tab_slide_layout = prs.slide_layouts[6]
             tab_slide = prs.slides.add_slide(tab_slide_layout)
             shapes = tab_slide.shapes
 
-            shapes.title.text = policy['ID'] + ' ' + policy['Name']
-            shapes.title.left = Inches(0)
-            shapes.title.right = Inches(0)
-            shapes.title.width = Inches(16)
-            shapes.title.height = Inches(1.5)
+            cryptonit_color = RGBColor(57, 100, 0) # dark green
 
-            cols = 2
-            rows = 5 + len(contexts)
-            left = Inches(2.5)
-            top = Inches(2.0)
-            width = Inches(8.0)
+            # Place policy ID
+            left = Inches(1.5)
+            top = Inches(0.4)
+            width = Inches(3.5)
+            height = Inches(0.7)
+            id_box = shapes.add_textbox(left, top, width, height)
+            paragraph = id_box.text_frame.paragraphs[0]
+            paragraph.alignment = PP_ALIGN.LEFT
+            run = paragraph.add_run()
+            run.text = policy['ID']
+            run.font.name = "Calibri Light"
+            run.font.color.rgb = cryptonit_color
+            run.font.size = Pt(36)
+            run.font.bold = True
+            run.font.underline = True
+
+            # Place policy Severity
+            if policy['Severity'] in ['High', 'Medium', 'Low']:
+                left = Inches(5)
+                top = Inches(0.55)
+                width = Inches(1.2)
+                height = Inches(0.4)
+                severity_rect = shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
+                severity_rect.shadow.inherit = False
+                paragraph = severity_rect.text_frame.paragraphs[0]
+                paragraph.alignment = PP_ALIGN.CENTER
+                run = paragraph.add_run()
+                run.text = policy['Severity']
+                run.font.name = "Calibri Light"
+                run.font.size = Pt(20)
+                severity_rect.fill.solid()
+                low_color = RGBColor(0, 112, 192) # blue
+                medium_color = RGBColor(239, 169, 6) # orange
+                high_color = RGBColor(192, 0, 0) # red
+
+                if policy['Severity'] == "Low":
+                    color = low_color
+                elif policy['Severity'] == "Medium":
+                    color = medium_color
+                elif policy['Severity'] == "High":
+                    color = high_color
+
+                severity_rect.fill.fore_color.rgb = color
+                severity_rect.line.color.rgb = color
+
+            # Place policy Level
+            if 'Level' in hardening_dataframe.columns and policy['Level'] in ['NG', 'L1', 'L2']:
+                color_NG = RGBColor(146, 145, 157) # grey
+                color_L1 = RGBColor(232, 175, 207) # pink
+                color_L2 = RGBColor(187, 153, 232) # purple
+                left = Inches(6.4)
+                top = Inches(0.55)
+                width = Inches(0.6)
+                height = Inches(0.4)
+                level_rect = shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
+                level_rect.shadow.inherit = False
+                paragraph = level_rect.text_frame.paragraphs[0]
+                paragraph.alignment = PP_ALIGN.CENTER
+                run = paragraph.add_run()
+                run.text = policy['Level']
+                run.font.name = "Calibri Light"
+                run.font.size = Pt(20)
+                level_rect.fill.solid()
+                if policy['Level'] == 'L1':
+                    level_color = color_L1
+                elif policy['Level'] == 'L2':
+                    level_color = color_L2
+                else:
+                    level_color = color_NG
+                level_rect.fill.fore_color.rgb = level_color
+                level_rect.line.color.rgb = level_color
+
+            # Place policy name
+            left = Inches(1.5)
+            top = Inches(1)
+            width = Inches(14.5)
+            height = Inches(0.5)
+            name_box = shapes.add_textbox(left, top, width, height)
+            paragraph = name_box.text_frame.paragraphs[0]
+            paragraph.alignment = PP_ALIGN.LEFT
+            run = paragraph.add_run()
+            run.text = policy['Name']
+            run.font.name = "Calibri Light"
+            run.font.color.rgb = cryptonit_color
+            run.font.size = Pt(30)
+
+            # Add value table
+            if len(contexts) == 0:
+                cols = 2
+            else:
+                cols = 5
+
+            rows = 4 + len(contexts)
+            left = Inches(2.0)
+            top = Inches(1.7)
+            width = Inches(13)
             height = Inches(0.12)
 
-            table = shapes.add_table(rows, cols, left, top, width, height).table
+            shape = shapes.add_table(rows, cols, left, top, width, height)
+            table = shape.table
+            table_style= '{EB344D84-9AFB-497E-A393-DC336BA19D2E}'
+            tbl =  shape._element.graphic.graphicData.tbl
+            tbl[0][-1].text = table_style
 
-            # set column widths
-            table.columns[1].width = Inches(8.8)
+            # Change font size
+            for cell in self.iter_cells(table):
+                for paragraph in cell.text_frame.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(16)
+
+            # set columns widths
+            table.columns[0].width = Inches(3)
+            table.columns[1].width = Inches(8)
+            if len(contexts) > 0:
+                table.columns[2].width = Inches(0.75)
+                table.columns[3].width = Inches(0.75)
+                table.columns[4].width = Inches(0.75)
+
 
             # set rows height
             table.rows[0].height = Inches(0.7) # Title
@@ -163,11 +268,48 @@ class FileFunctions():
                 table.rows[i + 4].height = Inches(0.7)
                 i+=1
 
-            table.rows[i + 4].height = Inches(0.7) # Comment
-
             # Default column headings
             table.cell(0, 0).text = 'Variable'
             table.cell(0, 1).text = 'Value'
+            table.cell(0, 0).fill.solid()
+            table.cell(0, 0).fill.fore_color.rgb = cryptonit_color
+            table.cell(0, 1).fill.solid()
+            table.cell(0, 1).fill.fore_color.rgb = cryptonit_color
+
+            if len(contexts) > 0:
+                table.cell(0, 2).fill.solid()
+                table.cell(0, 2).fill.fore_color.rgb = cryptonit_color
+                table.cell(0, 3).fill.solid()
+                table.cell(0, 3).fill.fore_color.rgb = cryptonit_color
+                table.cell(0, 4).fill.solid()
+                table.cell(0, 4).fill.fore_color.rgb = cryptonit_color
+
+                table.cell(0, 1).merge(table.cell(0, 4))
+                table.cell(1, 1).merge(table.cell(1, 4))
+                table.cell(2, 1).merge(table.cell(2, 4))
+                #table.cell(3, 2).merge(table.cell(3, 4))
+
+                # create choice result table
+                table.cell(3, 2).fill.solid()
+                table.cell(3, 2).fill.fore_color.rgb = cryptonit_color
+                table.cell(3, 2).text = 'RecVal'
+                table.cell(3, 2).text_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+                table.cell(3, 2).text_frame.paragraphs[0].font.bold = True
+                table.cell(3, 2).text_frame.paragraphs[0].font.size = Pt(14)
+
+                table.cell(3, 3).fill.solid()
+                table.cell(3, 3).fill.fore_color.rgb = cryptonit_color
+                table.cell(3, 3).text = 'Same'
+                table.cell(3, 3).text_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+                table.cell(3, 3).text_frame.paragraphs[0].font.bold = True
+                table.cell(3, 3).text_frame.paragraphs[0].font.size = Pt(14)
+
+                table.cell(3, 4).fill.solid()
+                table.cell(3, 4).fill.fore_color.rgb = cryptonit_color
+                table.cell(3, 4).text = 'Other'
+                table.cell(3, 4).text_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+                table.cell(3, 4).text_frame.paragraphs[0].font.bold = True
+                table.cell(3, 4).text_frame.paragraphs[0].font.size = Pt(14)
 
             # Default 1st column cells
             table.cell(1, 0).text = 'Possible values'
@@ -179,23 +321,24 @@ class FileFunctions():
                 table.cell(i + 4, 0).text = contexts_columns[i]
                 i+=1
 
-            table.cell(i + 4, 0).text = 'Comment'
-
-            # Check possible values
+            # # Check possible values
             if 'PossibleValues' in hardening_dataframe.columns:
                 possible_values = policy['PossibleValues']
-                possible_values.replace('[','').replace(']','').replace("'",'').split(",")
-                final_text = ''
-                i=0
-                for possible_value in possible_values:
-                    if possible_value == 'nan':
-                        final_text = ''
-                    else:
-                        if i != len(possible_values)-1:
-                            final_text += '• ' + possible_value.strip() + '\n'
+                if possible_values != '':
+                    possible_values = possible_values.replace('[','').replace(']','').replace("'",'').split(",")
+                    final_text = ''
+                    i=0
+                    for possible_value in possible_values:
+                        if possible_value == 'nan':
+                            final_text = ''
                         else:
-                            final_text += '• ' + possible_value.strip()
-                    i+=1
+                            if i != len(possible_values)-1:
+                                final_text += '• ' + possible_value.strip() + '\n'
+                            else:
+                                final_text += '• ' + possible_value.strip()
+                        i+=1
+                else:
+                    final_text = ''
             else:
                 final_text = ''
 
@@ -208,33 +351,31 @@ class FileFunctions():
             while i < len(contexts):
                 table.cell(i + 4, 1).text = policy[contexts[i]] if policy[contexts[i]] != 'nan' else ''
                 i+=1
-
-            table.cell(i + 4, 1).text = ''
-
-            # Change font size
-            for cell in self.iter_cells(table):
-                for paragraph in cell.text_frame.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.size = Pt(17)
             
             # Vertical center cell text
             for cell in self.iter_cells(table):
                 cell.vertical_anchor = MSO_ANCHOR.MIDDLE
 
-            # Add Microsoft Link
-            if 'MicrosoftLink' in hardening_dataframe.columns:
-                left = Inches(1.0)
-                top = Inches(8.2)
-                width = Inches(15.0)
-                height = Inches(0.5)
-                text_box = shapes.add_textbox(left, top, width, height)
-                paragraph = text_box.text_frame.paragraphs[0]
+            # Place policy description
+            if 'Description' in hardening_dataframe.columns and policy['Description'] != '':
+                left = Inches(2)
+                top = Inches(7.2)
+                width = Inches(13)
+                height = Inches(1.5)
+                severity_rect = shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
+                severity_rect.shadow.inherit = False
+                paragraph = severity_rect.text_frame.paragraphs[0]
                 paragraph.alignment = PP_ALIGN.CENTER
                 run = paragraph.add_run()
-                run.text = policy['MicrosoftLink'] if not policy['MicrosoftLink'] == 'nan' else ''
-                run.hyperlink.address = policy['MicrosoftLink'] if not policy['MicrosoftLink'] == 'nan' else None
-                text_box.text_frame.word_wrap = True
-            
+                run.text = policy['Description'].split("Note:",1)[0]
+                run.font.name = "Calibri Light"
+                run.font.size = Pt(16)
+                run.font.color.rgb = RGBColor(0, 0, 0)
+                severity_rect.fill.solid()
+                lg_color = RGBColor(197, 224, 180) # light green
+
+                severity_rect.fill.fore_color.rgb = lg_color
+                severity_rect.line.color.rgb = lg_color
 
         prs.save(powerpoint_filepath)
 
