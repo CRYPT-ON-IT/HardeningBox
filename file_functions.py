@@ -50,15 +50,6 @@ class FileFunctions():
         df = df.astype(str)
         return df
 
-    def read_xlsx_tracefile(self):
-        """
-            This function will return Excel sheets from trace file
-        """
-        df_all_policies = pd.read_excel("ExcelResult.xlsx", "All-Policies").fillna('')
-        df_contexts = pd.read_excel("ExcelResult.xlsx", "Contexts").fillna('')
-
-        return df_all_policies, df_contexts
-
     def convert_csv_2_excel(self):
         """
             This function will transform a CSV file
@@ -237,23 +228,3 @@ class FileFunctions():
             
 
         prs.save(powerpoint_filepath)
-
-    def create_applicable_csv(self, contexts: list, df_all_policies: pd.DataFrame):
-        # retrieve policies and create csv
-        try:
-            CONTEXT_INDENT = 0
-            for context in contexts:
-                CONTEXT_INDENT += 1
-                CONTEXT_NAME = "Context"+str(CONTEXT_INDENT)
-                output_dataframe = pd.DataFrame(columns=df_all_policies.columns.values.tolist())
-                for index, policy in context.iterrows():
-                    # getting matching policy by name, .copy() 
-                    # is to precise we want a copy and not a view of the dataframe
-                    full_policy = df_all_policies.loc[df_all_policies['Name'] == policy['Name']].copy()
-                    full_policy['RecommendedValue'] = policy[CONTEXT_NAME + ' - Computed Value']
-                    output_dataframe = pd.concat([full_policy,output_dataframe.loc[:]]).reset_index(drop=True)
-                    output_dataframe = output_dataframe.drop(['Description', 'Rationale', 'Impact'], axis=1)
-                output_dataframe.to_csv(CONTEXT_NAME+".csv", index=False)
-            return True
-        except:
-            return False
