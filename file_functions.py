@@ -1,5 +1,6 @@
 import os
 import sys
+import csv
 import pandas as pd
 from pptx.util import Pt
 from pptx.util import Inches
@@ -398,3 +399,15 @@ class FileFunctions():
             return True
         except:
             return False
+
+    def replace_defaults_values(self, output_csv):
+        """
+            This function will replace "DefaultValue" column content from
+            file finding list to "-NODATA-"
+        """
+        df = pd.read_csv(self.file)
+        df = df.fillna('')
+        
+        df =  df.assign(DefaultValue='-NODATA-')
+        df.to_csv(output_csv, index=False, quotechar='"', header=None, quoting=csv.QUOTE_NONNUMERIC)
+        return True

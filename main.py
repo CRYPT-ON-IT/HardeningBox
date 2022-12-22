@@ -12,7 +12,7 @@ def check_arguments():
         This function will check all arguments given by the user and assign values to variables.
         It permits to a user to not interact with the program (if all arguments are given).
     """
-    #choosed_tool = False
+    #chosen_tool = False
     help_args = ['-h', '--help']
     if any(x in help_args for x in sys.argv):
         print("""
@@ -74,6 +74,13 @@ def check_arguments():
                         ./main.py -t -tf <trace_file.xlsx>
                         ./main.py --trace --trace-file <trace_file.xlsx>
 
+                -r, --rm-defaults-values : Replace all default values with "-NODATA-"
+                    You must add -f or --input-file to specify the csv file finding list
+                    You must add -o or --ouput-file to specify the name of the output csv file
+                    Usage :
+                        ./main.py -r -f <file.csv> -o <ouput.csv>
+                        ./main.py --rm-defaults-values --input-file <file.csv> --ouput-file <ouput.csv>
+
             Others :
                 -h, --help : show this help menu
                 Usage :
@@ -85,46 +92,51 @@ def check_arguments():
 
     audit_result_args = ['-a', '--audit-result']
     if any(x in audit_result_args for x in sys.argv):
-        choosed_tool = '1'
-        return choosed_tool
+        chosen_tool = '1'
+        return chosen_tool
 
     msft_link_args = ['-l', '--msft-link']
     if any(x in msft_link_args for x in sys.argv):
-        choosed_tool = '2'
-        return choosed_tool
+        chosen_tool = '2'
+        return chosen_tool
 
     scrap_args = ['-s', '--scrap']
     if any(x in scrap_args for x in sys.argv):
-        choosed_tool = '3'
-        return choosed_tool
+        chosen_tool = '3'
+        return chosen_tool
 
     add_scrapped_args = ['-as', '--add-scrapped']
     if any(x in add_scrapped_args for x in sys.argv):
-        choosed_tool = '4'
-        return choosed_tool
+        chosen_tool = '4'
+        return chosen_tool
 
     xlsx_args = ['-x', '--xlsx']
     if any(x in xlsx_args for x in sys.argv):
-        choosed_tool = '5'
-        return choosed_tool
+        chosen_tool = '5'
+        return chosen_tool
 
     pptx_args = ['-p', '--pptx']
     if any(x in pptx_args for x in sys.argv):
-        choosed_tool = '6'
-        return choosed_tool
+        chosen_tool = '6'
+        return chosen_tool
 
     mrg_args = ['-m', '--merge-2-csv']
     if any(x in mrg_args for x in sys.argv):
-        choosed_tool = '7'
-        return choosed_tool
+        chosen_tool = '7'
+        return chosen_tool
     
     trc_args = ['-tf', '--trace-file']
     if any(x in trc_args for x in sys.argv):
-        choosed_tool = '8'
-        return choosed_tool
+        chosen_tool = '8'
+        return chosen_tool
 
-    choosed_tool = False
-    return choosed_tool
+    trc_args = ['-r', '--rm-defaults-values']
+    if any(x in trc_args for x in sys.argv):
+        chosen_tool = '9'
+        return chosen_tool
+
+    chosen_tool = False
+    return chosen_tool
 
 print("""
     #################################################################################################################### _ 0 X #
@@ -151,10 +163,10 @@ print("""
     
     """)
 
-CHOOSED_TOOL = check_arguments()
+CHOSEN_TOOL = check_arguments()
 
-if not CHOOSED_TOOL:
-    CHOOSED_TOOL = input("""
+if not CHOSEN_TOOL:
+    CHOSEN_TOOL = input("""
         1. Add audit result to a CSV file
         2. Add Microsoft Links to CSV (Beta)
         3. Scrap policies from CIS pdf file (https://downloads.cisecurity.org/#/)
@@ -163,11 +175,12 @@ if not CHOOSED_TOOL:
         6. Transform CSV into PowerPoint slides
         7. Merge 2 csv files and remove duplicates by "Names"
         8. Create CSV contexts applicable files from Excel trace file 
+        9. Replace all default values with "-NODATA-"
 
-    Choose your tool (1->8): """)
+    Choose your tool (1->9): """)
 
 # Add audit result to a CSV file
-if CHOOSED_TOOL == '1':
+if CHOSEN_TOOL == '1':
 
     original_filepath = ''
     original_filepath_args = ['-of', '--original-file']
@@ -212,7 +225,7 @@ if CHOOSED_TOOL == '1':
     throw('Audit column added successfully.', 'low')
 
 # Add Microsoft Links to CSV (Beta)
-elif CHOOSED_TOOL == '2':
+elif CHOSEN_TOOL == '2':
     hardening_filepath = ''
     hardening_filepath_args = ['-of', '--original-file']
     for hardening_filepath_arg in hardening_filepath_args:
@@ -231,7 +244,7 @@ elif CHOOSED_TOOL == '2':
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
 # Scrap policies from CIS pdf file (https://downloads.cisecurity.org/#/)
-elif CHOOSED_TOOL == '3':
+elif CHOSEN_TOOL == '3':
     if len(sys.argv) == 0:
         input("""\033[93m
     In order to prepare this tool, you need to transfer pdf text data into a txt file.
@@ -267,7 +280,7 @@ elif CHOOSED_TOOL == '3':
     throw('CIS pdf data has been scrapped successfully.', 'low')
 
 # Add scrapped data to CSV file
-elif CHOOSED_TOOL == '4':
+elif CHOSEN_TOOL == '4':
     original_filepath = ''
     original_filepath_args = ['-of', '--original-file']
     for original_filepath_arg in original_filepath_args:
@@ -309,7 +322,7 @@ elif CHOOSED_TOOL == '4':
     throw('Scrapped data added successfully.', 'low')
 
 # Excel <-> CSV convertion
-elif CHOOSED_TOOL == '5':
+elif CHOSEN_TOOL == '5':
     CHOICE = ''
     if '--csv2xlsx' in sys.argv:
         CHOICE = '1'
@@ -357,7 +370,7 @@ Would you like to :
     throw("File has been converted successfully.", "low")
 
 # Transform CSV into PowerPoint slides
-elif CHOOSED_TOOL == '6':
+elif CHOSEN_TOOL == '6':
     hardening_filepath = ''
     hardening_filepath_args = ['-csv', '--csv-file']
     for hardening_filepath_arg in hardening_filepath_args:
@@ -413,7 +426,7 @@ Actual Columns :
     throw('PowerPoint has been successfully created.', 'low')
 
 # Add scrapped data to CSV file
-elif CHOOSED_TOOL == '7':
+elif CHOSEN_TOOL == '7':
     first_filepath = ''
     first_filepath_args = ['-f1', '--first-file']
     for first_filepath_arg in first_filepath_args:
@@ -453,7 +466,7 @@ elif CHOOSED_TOOL == '7':
     throw('Scrapped data added successfully.', 'low')
 
 # Create CSV from trace file
-elif CHOOSED_TOOL == '8':
+elif CHOSEN_TOOL == '8':
     tracefile_filepath = ''
     tracefile_filepath_args = ['-tf', '--trace-file']
     for tracefile_filepath_arg in tracefile_filepath_args:
@@ -497,6 +510,34 @@ elif CHOOSED_TOOL == '8':
         throw('Applicable CSV created successfully.', 'low')
     else:
         throw("Couldn't create CSV files.", "high")
+
+# Replace all default values with "-NODATA-"
+elif CHOSEN_TOOL == '9':
+    # input file
+    file_finding_list_path = ''
+    file_finding_list_path_args = ['-f', '--input-file']
+    for file_finding_list_path_arg in file_finding_list_path_args:
+        for arg in sys.argv:
+            if file_finding_list_path_arg == arg:
+                file_finding_list_path = sys.argv[sys.argv.index(arg)+1]
+    if file_finding_list_path == '':
+        file_finding_list_path = input('\nWhich file_finding_list file should I look for (e.g. : filename.csv) : ')
+
+    # output file
+    output_csv = ''
+    output_csv_args = ['-o', '--output-file']
+    for output_csv_arg in output_csv_args:
+        for arg in sys.argv:
+            if output_csv_arg == arg:
+                output_csv = sys.argv[sys.argv.index(arg)+1]
+    if output_csv == '':
+        output_csv = input("\nWhat's the name of the CSV output file ? : ")
+
+    file_finding_list_file = FileFunctions(file_finding_list_path)
+    file_finding_list_file.file_exists()
+    new_file_finding_list = file_finding_list_file.replace_defaults_values(output_csv)
+
+    throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
 else:
     throw('Tool selected not in list, exiting.', 'high')
