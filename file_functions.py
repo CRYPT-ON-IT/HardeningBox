@@ -409,5 +409,5 @@ class FileFunctions():
         df = df.fillna('')
         
         df =  df.assign(DefaultValue='-NODATA-')
-        df.to_csv(output_csv, index=False, quotechar='"', header=None, quoting=csv.QUOTE_NONNUMERIC)
+        df.to_csv(output_csv, index=False)
         return True
