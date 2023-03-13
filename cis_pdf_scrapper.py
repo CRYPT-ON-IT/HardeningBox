@@ -86,7 +86,7 @@ class CISPdfScrapper:
         # Add csv header to csv output
         try:
             f = open(self.output_filepath, 'w+')
-            f.write('"ID","Level","Policy Name","Default Value","Recommended Value","Impact","Description","Rationale"\n')
+            f.write('"ID","Level","Policy Name","Default Value","Recommended Value","Impact","Description","Rationale","Remediation"\n')
             f.close()
         except:
             throw("Couldn't write to output filepath, please verify you have rights to write, exiting.", "highs")
@@ -153,7 +153,19 @@ class CISPdfScrapper:
                     next_val = r'\n(.*)'
                 else:
                     next_val = sorted_[remediation_index+1]
+                # print(policy)
+                # exit()
                 #remediation_content = re.findall(r'Remediation:\n((.|\n)*?)'+next_val, policy)[0][0].replace('\n','').replace("\"","\'") # Retreive remediation
+                out =[]
+                strings = policy.splitlines()
+                for index, line in enumerate(strings):
+                    if 'Computer Configuration\\' in line or 'User Configuration\\' in line:
+                        if index+1 < len(strings) and '\\' in strings[index+1]:
+                            line+=strings[index+1]
+                        out.append(line.strip())
+                if len(out)==0:
+                    print(policy)
+                remediation_content = ';'.join(out)
 
             if impact:
                 impact_index = sorted_.index('Impact:')
@@ -188,7 +200,7 @@ class CISPdfScrapper:
             level = self.ParsePolicyName(policy_name)
 
             f = open(self.output_filepath, 'a')
-            f.write('"'+id+'","'+level+'","'+policy_name+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'"\n')
+            f.write('"'+id+'","'+level+'","'+policy_name+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'","'+remediation_content+'"\n')
             f.close()
 
         
