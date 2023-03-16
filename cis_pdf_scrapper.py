@@ -153,9 +153,6 @@ class CISPdfScrapper:
                     next_val = r'\n(.*)'
                 else:
                     next_val = sorted_[remediation_index+1]
-                # print(policy)
-                # exit()
-                #remediation_content = re.findall(r'Remediation:\n((.|\n)*?)'+next_val, policy)[0][0].replace('\n','').replace("\"","\'") # Retreive remediation
                 out =[]
                 strings = policy.splitlines()
                 for index, line in enumerate(strings):
