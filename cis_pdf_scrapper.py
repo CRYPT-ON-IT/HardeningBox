@@ -22,11 +22,11 @@ class CISPdfScrapper:
     def ParsePolicyName(self, policy_name):
         # Get level 
         final_level = ""
-        possible_levels = ['(L1)','(L2)','(NG)']
+        possible_levels = ['(L1)','(L2)','(NG)', '(BL)']
         for level in possible_levels:
             if level in policy_name:
-                final_level = level 
-        return final_level 
+                final_level = level
+        return final_level
 
     """
         This function will identify the order of the different paragraphs.
