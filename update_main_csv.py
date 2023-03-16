@@ -164,6 +164,7 @@ class UpdateMainCsv():
         self.original_dataframe.insert(12,'Description',None)
         self.original_dataframe.insert(12,'Default Value (Scrapped)',None)
         self.original_dataframe.insert(12,'Recommended Value (Scrapped)',None)
+        self.original_dataframe.insert(12,'Remediation',None)
         self.original_dataframe.insert(12,'Level',None)
 
         for index, policy in self.original_dataframe.iterrows():
@@ -206,6 +207,10 @@ class UpdateMainCsv():
             searchDefVal = search['Default Value'].values
             if searchDefVal.size > 0:
                 policy['Default Value (Scrapped)'] = searchDefVal[0]
+
+            searchRemediation = search['Remediation'].values
+            if searchRemediation.size > 0:
+                policy['Remediation'] = searchRemediation[0]
                 
             searchLevel = search['Level'].values
             if searchLevel.size > 0:
