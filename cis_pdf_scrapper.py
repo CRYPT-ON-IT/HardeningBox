@@ -93,7 +93,6 @@ class CISPdfScrapper:
 
         for policy in cis_policies:
             policy = re.sub(r'\d* \| P a g e', '', policy) # Remove page strings
-            policy = policy.split('CIS Controls:')[0] # remove CIS Control part
 
             id = re.findall(r'(^\d+[\.\d]+) ', policy)[0] # Retreive policy ID
             policy_name = re.findall(id+r' (.*)', policy)[0]
@@ -197,5 +196,3 @@ class CISPdfScrapper:
             f = open(self.output_filepath, 'a')
             f.write('"'+id+'","'+level+'","'+policy_name+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'","'+remediation_content+'"\n')
             f.close()
-
-        
