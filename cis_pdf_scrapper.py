@@ -160,8 +160,6 @@ class CISPdfScrapper:
                         if index+1 < len(strings) and '\\' in strings[index+1]:
                             line+=strings[index+1]
                         out.append(line.strip())
-                if len(out)==0:
-                    print(policy)
                 remediation_content = ';'.join(out)
 
             if impact:
