@@ -60,8 +60,8 @@ class UpdateMainCsv():
             to an hardening file with some Microsoft
             Links to help the user.
         """
-        self.original_dataframe.insert(10, 'MicrosoftLink', None)
-        self.original_dataframe.insert(11, 'PossibleValues', None)
+        self.original_dataframe = self.original_dataframe.assign(MicrosoftLink=None)
+        self.original_dataframe = self.original_dataframe.assign(PossibleValues=None)
 
         print('\033[93mFetching Microsoft website, it might take less than a minute...\n\033[0m')
         for index, policy in self.original_dataframe.iterrows():
@@ -138,7 +138,7 @@ class UpdateMainCsv():
                             break
                         line_number+=1
 
-                    if response_list[line_number+1] == "<ul>":
+                    if len(response_list) >= line_number+1 and response_list[line_number+1] == "<ul>":
                         possible_values = []
                         while not response_list[line_number+2].startswith("</ul>"):
                             possible_values.append(response_list[line_number+2].replace('<li>','').replace('</li>','').replace('<p>','').replace('</p>','').replace('<em>','').replace('</em>','').replace('<strong>','').replace('</strong>',''))
@@ -159,13 +159,13 @@ class UpdateMainCsv():
             This function will add scrapped data
             from a CIS Benchmark PDF to a CSV file.
         """
-        self.original_dataframe.insert(12,'Impact',None)
-        self.original_dataframe.insert(12,'Rationale',None)
-        self.original_dataframe.insert(12,'Description',None)
-        self.original_dataframe.insert(12,'Default Value (Scrapped)',None)
-        self.original_dataframe.insert(12,'Recommended Value (Scrapped)',None)
-        self.original_dataframe.insert(12,'Remediation',None)
-        self.original_dataframe.insert(12,'Level',None)
+        self.original_dataframe = self.original_dataframe.assign(Impact=None)
+        self.original_dataframe = self.original_dataframe.assign(Rationale=None)
+        self.original_dataframe = self.original_dataframe.assign(Description=None)
+        self.original_dataframe = self.original_dataframe.assign(ScrappedDefaultValue=None)
+        self.original_dataframe = self.original_dataframe.assign(ScrappedRecommendedValue=None)
+        self.original_dataframe = self.original_dataframe.assign(Remediation=None)
+        self.original_dataframe = self.original_dataframe.assign(Level=None)
 
         for index, policy in self.original_dataframe.iterrows():
             search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == policy['ID']]
@@ -202,11 +202,11 @@ class UpdateMainCsv():
             
             searchRecVal = search['Recommended Value'].values
             if searchRecVal.size > 0:
-                policy['Recommended Value (Scrapped)'] = searchRecVal[0]
+                policy['ScrappedRecommendedValue'] = searchRecVal[0]
             
             searchDefVal = search['Default Value'].values
             if searchDefVal.size > 0:
-                policy['Default Value (Scrapped)'] = searchDefVal[0]
+                policy['ScrappedDefaultValue'] = searchDefVal[0]
 
             searchRemediation = search['Remediation'].values
             if searchRemediation.size > 0:
