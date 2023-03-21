@@ -44,15 +44,21 @@ class UpdateMainCsv():
         if self.output_filepath == "":
             self.output_filepath = input('How should I name the output CSV ? : ')
 
-        for index, policy in self.adding_dataframe.iterrows():
+        for _, policy in self.adding_dataframe.iterrows():
             policy_name = policy['Name']
             audit_result = policy['Result']
 
-            self.original_dataframe.loc[self.original_dataframe['Name'] == policy_name, output_column_name] = audit_result
-        try:    
+            self.original_dataframe.loc[
+                self.original_dataframe['Name'] == policy_name, output_column_name
+            ] = audit_result
+        try:
             self.original_dataframe.to_csv(self.output_filepath, index=False)
         except:
-            throw("Couldn't create CSV file, please check you have rights to wright in this folder, exiting.", "high")
+            throw(
+                "Couldn't create CSV file, please check you have rights\
+ to wright in this folder, exiting.",
+                "high"
+            )
 
     def add_microsoft_links(self):
         """
@@ -67,92 +73,129 @@ class UpdateMainCsv():
         for index, policy in self.original_dataframe.iterrows():
             name = policy['Name']
             lower_name = name.lower()
-            policy_name = lower_name.replace(' ', '-').replace(':', '').replace('(','').replace(')','')
+            policy_name = lower_name.replace(
+                ' ', '-'
+                ).replace(':', ''
+                          ).replace('(',''
+                                    ).replace(')','')
 
             if policy['Name'].startswith('Device Guard: '):
                 # There's only one doc for Device Guard
-                full_link = 'https://docs.microsoft.com/en-us/windows/security/identity-protection/credential-guard/credential-guard-manage'
+                full_link = 'https://docs.microsoft.com/en-us/windows/security/identity\
+-protection/credential-guard/credential-guard-manage'
                 self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
                 continue
 
             elif policy['Name'].startswith('Device Installation: '):
-                full_link = 'https://docs.microsoft.com/en-us/windows/client-management/manage-device-installation-with-group-policy'
+                full_link = 'https://docs.microsoft.com/en-us/windows/client-management\
+/manage-device-installation-with-group-policy'
                 self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
                 continue
 
-            elif policy['Category'] in ['System Services','Administrative Templates: LAPS', 'Administrative Templates: Control Panel', 'MSS (Legacy)', 
-            'Administrative Templates: Network', 'Administrative Templates: Start Menu and Taskbar', 'Administrative Templates: System', 
-            'Administrative Templates: Windows Components', 'Microsoft Defender Antivirus', 'Microsoft Edge', 'PowerShell']:
+            elif policy['Category'] in ['System Services','Administrative Templates: LAPS',
+            'Administrative Templates: Control Panel', 'MSS (Legacy)', 
+            'Administrative Templates: Network', 'Administrative Templates: Start Menu and Taskbar',
+            'Administrative Templates: System', 'Administrative Templates: Windows Components',
+            'Microsoft Defender Antivirus', 'Microsoft Edge', 'PowerShell']:
                 # There's no Microsoft link for this policiy category
                 continue
 
             elif policy['Category'] == 'Windows Firewall':
                 # There's only one doc for firewall configuration
-                full_link = 'https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-firewall/best-practices-configuring'
+                full_link = 'https://docs.microsoft.com/en-us/windows/security/\
+threat-protection/windows-firewall/best-practices-configuring'
                 self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
                 continue
 
             elif policy['Category'] == 'MS Security Guide':
-                full_link = 'https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-security-configuration-framework/windows-security-baselines'
+                full_link = 'https://docs.microsoft.com/en-us/windows/security/\
+threat-protection/windows-security-configuration-framework/windows-security-baselines'
                 self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
                 continue
 
             elif policy['Category'] == 'Microsoft Defender Application Guard':
-                full_link = 'https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-application-guard/configure-md-app-guard#application-specific-settings'
+                full_link = 'https://docs.microsoft.com/en-us/windows/security/\
+threat-protection/microsoft-defender-application-guard/configure-md-app-guard\
+#application-specific-settings'
                 self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
                 continue
 
             elif policy['Category'] == 'Microsoft Defender Exploit Guard':
-                microsoft_link = "https://docs.microsoft.com/en-us/microsoft-365/security/defender-endpoint/attack-surface-reduction-rules-reference?view=o365-worldwide#"
+                microsoft_link = "https://docs.microsoft.com/en-us/microsoft-365/security/\
+defender-endpoint/attack-surface-reduction-rules-reference?view=o365-worldwide#"
                 policy_name = policy_name.replace('asr-','')
-                r = requests.get(microsoft_link + policy_name)
-                if r.status_code == 200:
+                response = requests.get(microsoft_link + policy_name, timeout=5)
+                if response.status_code == 200:
                     full_link = microsoft_link + policy_name
                     self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
-                elif r.status_code not in [200, 404]:
-                    print('An error occured with unexpected status code ' + str(r.status_code))
+                elif response.status_code not in [200, 404]:
+                    print(f'An error occured with unexpected status code {response.status_code}')
                 continue
 
             elif policy['Category'] == 'Advanced Audit Policy Configuration':
-                microsoft_link = 'https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/audit-'
-                r = requests.get(microsoft_link + policy_name)
-                if r.status_code == 200:
+                microsoft_link = 'https://docs.microsoft.com/en-us/windows/security/\
+threat-protection/auditing/audit-'
+                response = requests.get(microsoft_link + policy_name, timeout=5)
+                if response.status_code == 200:
                     full_link = microsoft_link + policy_name
                     self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
-                elif r.status_code not in [200, 404]:
-                    throw('An error occured with unexpected status code ' + str(r.status_code), 'high')
+                elif response.status_code not in [200, 404]:
+                    throw(
+                        f'An error occured with unexpected status code {response.status_code}',
+                        'high'
+                    )
                 continue
 
-            elif policy['Category'] in ['Account Policies', 'User Rights Assignment', 'Security Options']:
-                microsoft_link = 'https://docs.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/'
-                r = requests.get(microsoft_link + policy_name)
-                if r.status_code == 200:
+            elif policy['Category'] in [
+                'Account Policies',
+                'User Rights Assignment',
+                'Security Options'
+            ]:
+                microsoft_link = 'https://docs.microsoft.com/en-us/windows/security/\
+threat-protection/security-policy-settings/'
+                response = requests.get(microsoft_link + policy_name, timeout=5)
+                if response.status_code == 200:
                     full_link = microsoft_link + policy_name
                     self.original_dataframe.at[index, 'MicrosoftLink'] = full_link
 
                     # Retreive possible values
-                    response_list = r.text.splitlines()
+                    response_list = response.text.splitlines()
                     line_number = 0
                     for line in response_list:
                         if line == '<h3 id="possible-values">Possible values</h3>':
                             break
                         line_number+=1
 
-                    if len(response_list) >= line_number+1 and response_list[line_number+1] == "<ul>":
+                    if (len(response_list) >= line_number+1
+                        and response_list[line_number+1] == "<ul>"):
                         possible_values = []
                         while not response_list[line_number+2].startswith("</ul>"):
-                            possible_values.append(response_list[line_number+2].replace('<li>','').replace('</li>','').replace('<p>','').replace('</p>','').replace('<em>','').replace('</em>','').replace('<strong>','').replace('</strong>',''))
+                            possible_values.append(response_list[line_number+2].replace('<li>',''
+                                ).replace('</li>',''
+                                ).replace('<p>',''
+                                ).replace('</p>',''
+                                ).replace('<em>',''
+                                ).replace('</em>',''
+                                ).replace('<strong>',''
+                                ).replace('</strong>',''))
                             line_number+=1
 
                     self.original_dataframe.at[index, 'PossibleValues'] = possible_values
-                elif r.status_code not in [200, 404]:
-                    throw('An error occured with unexpected status code ' + str(r.status_code), "high")
+                elif response.status_code not in [200, 404]:
+                    throw(
+                        f'An error occured with unexpected status code {response.status_code}',
+                        "high"
+                    )
 
         output_filepath = input('How should we name the output file ? : ')
         try:
             self.original_dataframe.to_csv(output_filepath, index=False)
         except:
-            throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
+            throw(
+                "Couldn't create output file, verify you have rights\
+to write in this folder, exiting.",
+                "high"
+            )
 
     def add_scrapped_data_to_csv(self):
         """
@@ -167,7 +210,7 @@ class UpdateMainCsv():
         self.original_dataframe = self.original_dataframe.assign(Remediation=None)
         self.original_dataframe = self.original_dataframe.assign(Level=None)
 
-        for index, policy in self.original_dataframe.iterrows():
+        for _, policy in self.original_dataframe.iterrows():
             search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == policy['ID']]
             # Checking ID
             if search['Level'].values.size == 0:
@@ -186,40 +229,46 @@ class UpdateMainCsv():
                 search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == id_2]
 
             if search['Level'].values.size == 0:
-                print('\033[93mWarning: Unable to get data from '+policy['ID']+' in scrapped content.\033[0m\n')
+                print('\033[93mWarning: Unable to get data from ' +
+                      policy['ID'] +
+                      ' in scrapped content.\033[0m\n'
+                )
 
-            searchImpact = search['Impact'].values
-            if searchImpact.size > 0:
-                policy['Impact'] = searchImpact[0]
+            search_impact = search['Impact'].values
+            if search_impact.size > 0:
+                policy['Impact'] = search_impact[0]
 
-            searchDescription = search['Description'].values
-            if searchDescription.size > 0:
-                policy['Description'] = searchDescription[0]
+            search_description = search['Description'].values
+            if search_description.size > 0:
+                policy['Description'] = search_description[0]
 
-            searchRationale = search['Rationale'].values
-            if searchRationale.size > 0:
-                policy['Rationale'] = searchRationale[0]
-            
-            searchRecVal = search['Recommended Value'].values
-            if searchRecVal.size > 0:
-                policy['ScrappedRecommendedValue'] = searchRecVal[0]
-            
-            searchDefVal = search['Default Value'].values
-            if searchDefVal.size > 0:
-                policy['ScrappedDefaultValue'] = searchDefVal[0]
+            search_rationale = search['Rationale'].values
+            if search_rationale.size > 0:
+                policy['Rationale'] = search_rationale[0]
 
-            searchRemediation = search['Remediation'].values
-            if searchRemediation.size > 0:
-                policy['Remediation'] = searchRemediation[0]
-                
-            searchLevel = search['Level'].values
-            if searchLevel.size > 0:
-                policy['Level'] = searchLevel[0]
+            search_recommended_value = search['Recommended Value'].values
+            if search_recommended_value.size > 0:
+                policy['ScrappedRecommendedValue'] = search_recommended_value[0]
+
+            search_default_value = search['Default Value'].values
+            if search_default_value.size > 0:
+                policy['ScrappedDefaultValue'] = search_default_value[0]
+
+            search_remediation = search['Remediation'].values
+            if search_remediation.size > 0:
+                policy['Remediation'] = search_remediation[0]
+
+            search_level = search['Level'].values
+            if search_level.size > 0:
+                policy['Level'] = search_level[0]
 
         try:
             self.original_dataframe.to_csv(self.output_filepath, index=False)
         except:
-            throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
+            throw("Couldn't create output file, verify you have\
+ rights to write in this folder, exiting.",
+                  "high"
+            )
 
     def merge_two_csv(self):
         """
@@ -233,9 +282,8 @@ class UpdateMainCsv():
         frames = [first_dataframe, second_dataframe]
         new_dataframe = pd.concat(frames)
         count1 = len(new_dataframe.index)
-        # we should to keep policy with defined level 
+        # we should to keep policy with defined level
         new_dataframe = new_dataframe.drop_duplicates(subset=["Name"], keep='first')
-        #print(new_dataframe[new_dataframe.duplicated(subset=["Name"], keep=False)][['Name','Level']])
         new_dataframe = new_dataframe.sort_values("Category")
         count2 = len(new_dataframe.index)
 
@@ -243,4 +291,7 @@ class UpdateMainCsv():
         try:
             new_dataframe.to_csv(self.output_filepath, index=False)
         except:
-            throw("Couldn't create output file, verify you have rights to write in this folder, exiting.", "high")
+            throw("Couldn't create output file, verify you have rights \
+to write in this folder, exiting.",
+                  "high"
+            )
