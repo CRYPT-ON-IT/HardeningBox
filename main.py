@@ -33,7 +33,7 @@ def check_arguments():
                         ./main.py -l -of <file.csv>
 
                 -s, --scrap : Scrap policies from a CIS Benchmark (pdf)
-                    You should add -pdf or --pdf-to-txt to specify the pdf2txt file
+                    You should add -pdf or --pdf-to-txt to specify the PDF2TXT file
                     You should add -o or --output to specify the output filepath
                     Usage : 
                         ./main.py --scrap --pdf-to-txt <file.txt> --output <file.csv>
@@ -68,7 +68,7 @@ def check_arguments():
                         ./main.py -m --first-file <file1.csv> --second-file <file2.csv>
                         ./main.py --merge-2-csv --first-file <file1.csv> --second-file <file2.csv> --output <output.csv>
 
-                -t, --trace : Convert Excel trace file to CSV applicable per context
+                -t, --trace : Convert Excel trace file to CSV applicable per CONTEXT
                     You must add -tf or --trace-file to specify the Excel trace file
                     Usage :
                         ./main.py -t -tf <trace_file.xlsx>
@@ -124,7 +124,7 @@ def check_arguments():
     if any(x in mrg_args for x in sys.argv):
         chosen_tool = '7'
         return chosen_tool
-    
+
     trc_args = ['-tf', '--trace-file']
     if any(x in trc_args for x in sys.argv):
         chosen_tool = '8'
@@ -182,63 +182,73 @@ if not CHOSEN_TOOL:
 # Add audit result to a CSV file
 if CHOSEN_TOOL == '1':
 
-    original_filepath = ''
+    ORIGINAL_FILEPATH = ''
     original_filepath_args = ['-of', '--original-file']
     for original_filepath_arg in original_filepath_args:
         for arg in sys.argv:
             if original_filepath_arg == arg:
-                original_filepath = sys.argv[sys.argv.index(arg)+1]
-    if original_filepath == '':
-        original_filepath = input('Which base hardening file should I look for (e.g. : filename.csv) : ')
-    original_file = FileFunctions(original_filepath)
+                ORIGINAL_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if ORIGINAL_FILEPATH == '':
+        ORIGINAL_FILEPATH = input(
+            'Which base hardening file should I look for (e.g. : filename.csv) : '
+            )
+    original_file = FileFunctions(ORIGINAL_FILEPATH)
     original_file.file_exists()
     original_dataframe = original_file.read_csv_file()
 
-    adding_filepath = ''
+    ADDING_FILEPATH = ''
     adding_filepath_args = ['-af', '--adding-file']
     for adding_filepath_arg in adding_filepath_args:
         for arg in sys.argv:
             if adding_filepath_arg == arg:
-                adding_filepath = sys.argv[sys.argv.index(arg)+1]
-    if adding_filepath == '':
-        adding_filepath = input("""
+                ADDING_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if ADDING_FILEPATH == '':
+        ADDING_FILEPATH = input("""
         Which audit result file should I look for (e.g. : filename.csv) : 
         """)
-    adding_file = FileFunctions(adding_filepath)
+    adding_file = FileFunctions(ADDING_FILEPATH)
     adding_file.file_exists()
     adding_dataframe = adding_file.read_csv_file()
 
-    output_filepath = ''
+    OUTPUT_FILEPATH = ''
     output_filepath_args = ['-o', '--output']
     for output_filepath_arg in output_filepath_args:
         for arg in sys.argv:
             if output_filepath_arg == arg:
-                output_filepath = sys.argv[sys.argv.index(arg)+1]
-    if output_filepath == '':
-        output_filepath = input("""
+                OUTPUT_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if OUTPUT_FILEPATH == '':
+        OUTPUT_FILEPATH = input("""
         How should we name the output file ? :  
         """)
 
-    csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath, output_filepath)
+    csv = UpdateMainCsv(
+        original_dataframe,
+        ORIGINAL_FILEPATH,
+        adding_dataframe,
+        ADDING_FILEPATH,
+        OUTPUT_FILEPATH
+    )
     csv.add_audit_result()
 
     throw('Audit column added successfully.', 'low')
 
 # Add Microsoft Links to CSV (Beta)
 elif CHOSEN_TOOL == '2':
-    hardening_filepath = ''
+    HARDENING_FILEPATH = ''
     hardening_filepath_args = ['-of', '--original-file']
     for hardening_filepath_arg in hardening_filepath_args:
         for arg in sys.argv:
             if hardening_filepath_arg == arg:
-                hardening_filepath = sys.argv[sys.argv.index(arg)+1]
-    if hardening_filepath == '':
-        hardening_filepath = input('\nWhich hardening file should I look for (e.g. : filename.csv) : ')
-    hardening_file = FileFunctions(hardening_filepath)
+                HARDENING_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if HARDENING_FILEPATH == '':
+        HARDENING_FILEPATH = input(
+            '\nWhich hardening file should I look for (e.g. : filename.csv) : '
+        )
+    hardening_file = FileFunctions(HARDENING_FILEPATH)
     hardening_file.file_exists()
     hardening_dataframe = hardening_file.read_csv_file()
 
-    csv = UpdateMainCsv(hardening_dataframe, hardening_filepath)
+    csv = UpdateMainCsv(hardening_dataframe, HARDENING_FILEPATH)
     csv.add_microsoft_links()
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
@@ -253,70 +263,78 @@ elif CHOSEN_TOOL == '3':
     
     yes(y) ? : \033[0m""")
 
-    pdf2txt_filepath = ''
+    PDF2TXT_FILEPATH = ''
     pdf2txt_filepath_args = ['-pdf', '--pdf-to-txt']
     for pdf2txt_filepath_arg in pdf2txt_filepath_args:
         for arg in sys.argv:
             if pdf2txt_filepath_arg == arg:
-                pdf2txt_filepath = sys.argv[sys.argv.index(arg)+1]
-    if pdf2txt_filepath == '':
-        pdf2txt_filepath = input('\nWhich text file should I look for (e.g. : filename.txt) : ')
-    pdf2txt_file = FileFunctions(pdf2txt_filepath)
+                PDF2TXT_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if PDF2TXT_FILEPATH == '':
+        PDF2TXT_FILEPATH = input('\nWhich text file should I look for (e.g. : filename.txt) : ')
+    pdf2txt_file = FileFunctions(PDF2TXT_FILEPATH)
     pdf2txt_file.file_exists()
     pdf2txt_content = pdf2txt_file.read_file()
 
-    output_filepath = ''
+    OUTPUT_FILEPATH = ''
     output_filepath_args = ['-o', '--output']
     for output_filepath_arg in output_filepath_args:
         for arg in sys.argv:
             if output_filepath_arg == arg:
-                output_filepath = sys.argv[sys.argv.index(arg)+1]
-    if output_filepath == '':
-        output_filepath = input('Where should we output the result (e.g. : output.csv) : ')
+                OUTPUT_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if OUTPUT_FILEPATH == '':
+        OUTPUT_FILEPATH = input('Where should we output the result (e.g. : output.csv) : ')
 
-    pdf2txt = CISPdfScrapper(pdf2txt_content, output_filepath)
-    pdf2txt.ScrapPdfData()
+    PDF2TXT = CISPdfScrapper(pdf2txt_content, OUTPUT_FILEPATH)
+    PDF2TXT.ScrapPdfData()
 
     throw('CIS pdf data has been scrapped successfully.', 'low')
 
 # Add scrapped data to CSV file
 elif CHOSEN_TOOL == '4':
-    original_filepath = ''
+    ORIGINAL_FILEPATH = ''
     original_filepath_args = ['-of', '--original-file']
     for original_filepath_arg in original_filepath_args:
         for arg in sys.argv:
             if original_filepath_arg == arg:
-                original_filepath = sys.argv[sys.argv.index(arg)+1]
-    if original_filepath == '':
-        original_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
-    original_file = FileFunctions(original_filepath)
+                ORIGINAL_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if ORIGINAL_FILEPATH == '':
+        ORIGINAL_FILEPATH = input('Which hardening file should I look for (e.g. : filename.csv) : ')
+    original_file = FileFunctions(ORIGINAL_FILEPATH)
     original_file.file_exists()
     original_dataframe = original_file.read_csv_file()
 
-    adding_filepath = ''
+    ADDING_FILEPATH = ''
     adding_filepath_args = ['-af', '--adding-file']
     for adding_filepath_arg in adding_filepath_args:
         for arg in sys.argv:
             if adding_filepath_arg == arg:
-                adding_filepath = sys.argv[sys.argv.index(arg)+1]
-    if adding_filepath == '':
-        adding_filepath = input('Which pdf scrapped data file should I look for (e.g. : filename.csv) : ')
-    adding_file = FileFunctions(adding_filepath)
+                ADDING_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if ADDING_FILEPATH == '':
+        ADDING_FILEPATH = input(
+            'Which pdf scrapped data file should I look for (e.g. : filename.csv) : '
+        )
+    adding_file = FileFunctions(ADDING_FILEPATH)
     adding_file.file_exists()
     adding_dataframe = adding_file.read_csv_file()
 
-    output_filepath = ''
+    OUTPUT_FILEPATH = ''
     output_filepath_args = ['-o', '--output']
     for output_filepath_arg in output_filepath_args:
         for arg in sys.argv:
             if output_filepath_arg == arg:
-                output_filepath = sys.argv[sys.argv.index(arg)+1]
-    if output_filepath == '':
-        output_filepath = input("""
+                OUTPUT_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if OUTPUT_FILEPATH == '':
+        OUTPUT_FILEPATH = input("""
         How should we name the output file ? :  
         """)
 
-    csv = UpdateMainCsv(original_dataframe, original_filepath, adding_dataframe, adding_filepath, output_filepath)
+    csv = UpdateMainCsv(
+        original_dataframe,
+        ORIGINAL_FILEPATH,
+        adding_dataframe,
+        ADDING_FILEPATH,
+        OUTPUT_FILEPATH
+    )
     csv.add_scrapped_data_to_csv()
 
     throw('Scrapped data added successfully.', 'low')
@@ -340,63 +358,63 @@ Would you like to :
 ''')
 
     if CHOICE == '1':
-        csv_filepath = ''
+        CSV_FILEPATH = ''
         csv_filepath_args = ['-csv', '--csv-file']
         for csv_filepath_arg in csv_filepath_args:
             for arg in sys.argv:
                 if csv_filepath_arg == arg:
-                    csv_filepath = sys.argv[sys.argv.index(arg)+1]
-        if csv_filepath == '':
-            csv_filepath = input('\nCsv file location : ')
-        csv_file = FileFunctions(csv_filepath)
+                    CSV_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+        if CSV_FILEPATH == '':
+            CSV_FILEPATH = input('\nCsv file location : ')
+        csv_file = FileFunctions(CSV_FILEPATH)
         csv_file.file_exists()
         csv_file.convert_csv_2_excel()
 
     elif CHOICE == '2':
-        excel_filepath = ''
+        EXCEL_FILEPATH = ''
         excel_filepath_args = ['-xlsx', '--xlsx-file']
         for excel_filepath_arg in excel_filepath_args:
             for arg in sys.argv:
                 if excel_filepath_arg == arg:
-                    excel_filepath = sys.argv[sys.argv.index(arg)+1]
-        if excel_filepath == '':
-            excel_filepath = input('\nExcel file location : ')
-        excel_file = FileFunctions(excel_filepath)
+                    EXCEL_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+        if EXCEL_FILEPATH == '':
+            EXCEL_FILEPATH = input('\nExcel file location : ')
+        excel_file = FileFunctions(EXCEL_FILEPATH)
         excel_file.file_exists()
         excel_file.convert_excel_2_csv()
 
     else:
-        throw('Wrong choice, exiting.', 'high')    
+        throw('Wrong choice, exiting.', 'high')
     throw("File has been converted successfully.", "low")
 
 # Transform CSV into PowerPoint slides
 elif CHOSEN_TOOL == '6':
-    hardening_filepath = ''
+    HARDENING_FILEPATH = ''
     hardening_filepath_args = ['-csv', '--csv-file']
     for hardening_filepath_arg in hardening_filepath_args:
         for arg in sys.argv:
             if hardening_filepath_arg == arg:
-                hardening_filepath = sys.argv[sys.argv.index(arg)+1]
-    if hardening_filepath == '':
-        hardening_filepath = input("""
+                HARDENING_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if HARDENING_FILEPATH == '':
+        HARDENING_FILEPATH = input("""
         Which base hardening file should I look for (e.g. : filename.csv) :
         """)
-    hardening_file = FileFunctions(hardening_filepath)
+    hardening_file = FileFunctions(HARDENING_FILEPATH)
     hardening_file.file_exists()
     hardening_dataframe = hardening_file.read_csv_file()
 
-    powerpoint_filepath = ''
+    POWERPOINT_FILEPATH = ''
     powerpoint_filepath_args = ['-o', '--output']
     for powerpoint_filepath_arg in powerpoint_filepath_args:
         for arg in sys.argv:
             if powerpoint_filepath_arg == arg:
-                powerpoint_filepath = sys.argv[sys.argv.index(arg)+1]
-    if powerpoint_filepath == '':
-        powerpoint_filepath = input("""
+                POWERPOINT_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if POWERPOINT_FILEPATH == '':
+        POWERPOINT_FILEPATH = input("""
         Where should I output the PowerPoint (e.g. : filename.pptx) : 
         """)
 
-    context = None
+    CONTEXT = None
     contexts = []
     context_columns = []
     print("""\033[93m
@@ -410,85 +428,91 @@ Actual Columns :
     • RecomendedValue
     • Description (Empty if column does not exists)
     • MicrosoftLink (Empty if column does not exists)\033[0m""")
-    while context != '':
-        context = input("\nIf there is any other column you would like to add, enter the name : ")
-        if context == '':
+    while CONTEXT != '':
+        CONTEXT = input("\nIf there is any other column you would like to add, enter the name : ")
+        if CONTEXT == '':
             break
-        elif context in hardening_dataframe.columns:
-            contexts.append(context)
+        elif CONTEXT in hardening_dataframe.columns:
+            contexts.append(CONTEXT)
             context_name = input('Please enter the name to show in the slides : ')
             context_columns.append(context_name)
         else:
             throw('Column not found in CSV, exiting.', 'high')
 
     hardening_file.create_powerpoint(
-        hardening_dataframe, contexts, context_columns, powerpoint_filepath)
+        hardening_dataframe, contexts, context_columns, POWERPOINT_FILEPATH)
     throw('PowerPoint has been successfully created.', 'low')
 
 # Add scrapped data to CSV file
 elif CHOSEN_TOOL == '7':
-    first_filepath = ''
+    FIRST_FILEPATH = ''
     first_filepath_args = ['-f1', '--first-file']
     for first_filepath_arg in first_filepath_args:
         for arg in sys.argv:
             if first_filepath_arg == arg:
-                first_filepath = sys.argv[sys.argv.index(arg)+1]
-    if first_filepath == '':
-        first_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
-    first_file = FileFunctions(first_filepath)
+                FIRST_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if FIRST_FILEPATH == '':
+        FIRST_FILEPATH = input('Which hardening file should I look for (e.g. : filename.csv) : ')
+    first_file = FileFunctions(FIRST_FILEPATH)
     first_file.file_exists()
     first_dataframe = first_file.read_csv_file()
 
-    second_filepath = ''
+    SECOND_FILEPATH = ''
     second_filepath_args = ['-f1', '--second-file']
     for second_filepath_arg in second_filepath_args:
         for arg in sys.argv:
             if second_filepath_arg == arg:
-                second_filepath = sys.argv[sys.argv.index(arg)+1]
-    if second_filepath == '':
-        second_filepath = input('Which hardening file should I look for (e.g. : filename.csv) : ')
-    second_file = FileFunctions(second_filepath)
+                SECOND_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if SECOND_FILEPATH == '':
+        SECOND_FILEPATH = input('Which hardening file should I look for (e.g. : filename.csv) : ')
+    second_file = FileFunctions(SECOND_FILEPATH)
     second_file.file_exists()
     second_dataframe = second_file.read_csv_file()
 
-    output_filepath = ''
+    OUTPUT_FILEPATH = ''
     output_filepath_args = ['-o', '--output']
     for output_filepath_arg in output_filepath_args:
         for arg in sys.argv:
             if output_filepath_arg == arg:
-                output_filepath = sys.argv[sys.argv.index(arg)+1]
-    if output_filepath == '':
-        output_filepath = input('Where should we output the result (e.g. : output.csv) : ')
+                OUTPUT_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if OUTPUT_FILEPATH == '':
+        OUTPUT_FILEPATH = input('Where should we output the result (e.g. : output.csv) : ')
 
-    csv = UpdateMainCsv(first_dataframe, first_filepath, second_dataframe, second_filepath, output_filepath)
+    csv = UpdateMainCsv(
+        first_dataframe,
+        FIRST_FILEPATH,
+        second_dataframe,
+        SECOND_FILEPATH,
+        OUTPUT_FILEPATH
+    )
     csv.merge_two_csv()
 
     throw('Scrapped data added successfully.', 'low')
 
 # Create CSV from trace file
 elif CHOSEN_TOOL == '8':
-    tracefile_filepath = ''
+    TRACEFILE_FILEPATH = ''
     tracefile_filepath_args = ['-tf', '--trace-file']
     for tracefile_filepath_arg in tracefile_filepath_args:
         for arg in sys.argv:
             if tracefile_filepath_arg == arg:
-                tracefile_filepath = sys.argv[sys.argv.index(arg)+1]
-    if tracefile_filepath == '':
-        tracefile_filepath = input('Which trace file should I look for (e.g. : filename.xlsx) : ')
-    tracefile_file = FileFunctions(tracefile_filepath)
+                TRACEFILE_FILEPATH = sys.argv[sys.argv.index(arg)+1]
+    if TRACEFILE_FILEPATH == '':
+        TRACEFILE_FILEPATH = input('Which trace file should I look for (e.g. : filename.xlsx) : ')
+    tracefile_file = FileFunctions(TRACEFILE_FILEPATH)
     tracefile_file.file_exists()
-    
+
     # load Excel sheets
     df_all_policies, df_contexts = tracefile_file.read_xlsx_tracefile()
 
     contexts_columns = df_contexts.columns.values.tolist()
 
     # count contexts
-    nb_contexts = 0
+    NB_CONTEXTS = 0
     for column in contexts_columns:
-        if column.startswith("Context-"):
-            nb_contexts+=1
-    if nb_contexts == 0:
+        if column.startswith("CONTEXT-"):
+            NB_CONTEXTS+=1
+    if NB_CONTEXTS == 0:
         throw("No contexts were found.", "high")
 
     # set the first row has header
@@ -500,13 +524,14 @@ elif CHOSEN_TOOL == '8':
 
     # add contexts with fixed value to a list
     contexts = []
-    for context in range(nb_contexts):
-        set_policies = ws_policies[ws_policies["Context"+str(context+1)+" - Fixed Value"]!="to check"]
+    for CONTEXT in range(NB_CONTEXTS):
+        set_policies = ws_policies[ws_policies["CONTEXT"+str(CONTEXT+1)+" - Fixed Value"]
+                                   !="to check"]
         contexts.append(set_policies)
 
-    result = tracefile_file.create_applicable_csv(contexts, df_all_policies)
+    RESULT = tracefile_file.create_applicable_csv(contexts, df_all_policies)
 
-    if result:
+    if RESULT:
         throw('Applicable CSV created successfully.', 'low')
     else:
         throw("Couldn't create CSV files.", "high")
@@ -514,28 +539,29 @@ elif CHOSEN_TOOL == '8':
 # Replace all default values with "-NODATA-"
 elif CHOSEN_TOOL == '9':
     # input file
-    file_finding_list_path = ''
+    FILE_FINDING_LIST_PATH = ''
     file_finding_list_path_args = ['-f', '--input-file']
     for file_finding_list_path_arg in file_finding_list_path_args:
         for arg in sys.argv:
             if file_finding_list_path_arg == arg:
-                file_finding_list_path = sys.argv[sys.argv.index(arg)+1]
-    if file_finding_list_path == '':
-        file_finding_list_path = input('\nWhich file_finding_list file should I look for (e.g. : filename.csv) : ')
+                FILE_FINDING_LIST_PATH = sys.argv[sys.argv.index(arg)+1]
+    if FILE_FINDING_LIST_PATH == '':
+        FILE_FINDING_LIST_PATH = input("""
+Which file_finding_list file should I look for (e.g. : filename.csv) : """)
 
     # output file
-    output_csv = ''
+    OUTPUT_CSV = ''
     output_csv_args = ['-o', '--output-file']
     for output_csv_arg in output_csv_args:
         for arg in sys.argv:
             if output_csv_arg == arg:
-                output_csv = sys.argv[sys.argv.index(arg)+1]
-    if output_csv == '':
-        output_csv = input("\nWhat's the name of the CSV output file ? : ")
+                OUTPUT_CSV = sys.argv[sys.argv.index(arg)+1]
+    if OUTPUT_CSV == '':
+        OUTPUT_CSV = input("\nWhat's the name of the CSV output file ? : ")
 
-    file_finding_list_file = FileFunctions(file_finding_list_path)
+    file_finding_list_file = FileFunctions(FILE_FINDING_LIST_PATH)
     file_finding_list_file.file_exists()
-    new_file_finding_list = file_finding_list_file.replace_defaults_values(output_csv)
+    NEW_FILE_FINDING_LIST = file_finding_list_file.replace_defaults_values(OUTPUT_CSV)
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
