@@ -52,8 +52,8 @@ def check_arguments():
                     You should add --csv2xlsx to transform a csv in an Excel file
                     or You should add --xlsx2csv to transform an Excel in a csv file
                     Usage : 
-                        ./main.py --csv2xlsx --csv-file <file.csv> --output <file.xlsx>
-                        ./main.py --xlsx2csv --xlsx-file <file.xlsx> --output <file.csv>
+                        ./main.py -x --csv2xlsx --csv-file <file.csv> --output <file.xlsx>
+                        ./main.py -x --xlsx2csv --xlsx-file <file.xlsx> --output <file.csv>
 
                 -p, --pptx : Transform a csv file into PowerPoint slides
                     You should add -csv or --csv-file to specify the csv file
@@ -81,6 +81,14 @@ def check_arguments():
                     You must add -o or --ouput-file to specify the name of the output csv file
                     Usage :
                         ./main.py -r -f <file.csv> -o <ouput.csv>
+
+                -xc, --report2csv : Transfrom a report file into multiple csv to apply with HardeningKitty
+                    You must add -xf or --xlsx-file to specify the Excel report file path
+                    You must add -f or --finding-lists to specify finding list linked to every context
+                    You can add -rf or --registry-filtered to specify that the output should be filtered with Registry method
+                    You can add -nrf or --not-registry-filtered to specify that the output shoould not be filtered by method
+                    If you have multiple contexts, you have to specify each finding list for the contexts, separated by a comma
+                        ./main.py -report2csv --report-file report.xlsx --finding-lists finding_list_1.csv,finding_list_2.csv
 
             Others :
                 -h, --help : show this help menu
@@ -134,6 +142,11 @@ def check_arguments():
     rm_args = ['-r', '--rm-defaults-values']
     if any(x in rm_args for x in sys.argv):
         chosen_tool = '9'
+        return chosen_tool
+    
+    xc_args = ['-xc', '--report2csv']
+    if any(x in xc_args for x in sys.argv):
+        chosen_tool = '10'
         return chosen_tool
 
     chosen_tool = False
@@ -568,30 +581,71 @@ Which file_finding_list file should I look for (e.g. : filename.csv) : """)
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
 elif CHOSEN_TOOL == '10':
-    REPORT_PATH = input('\nPlease enter the excel report path : ')
+    # report file
+    REPORT_PATH = ''
+    report_file_path_args = ['-xf', '--xlsx-file']
+    for report_file_path_arg in report_file_path_args:
+        for arg in sys.argv:
+            if report_file_path_arg == arg:
+                REPORT_PATH = sys.argv[sys.argv.index(arg)+1]
+    if REPORT_PATH == '':
+        REPORT_PATH = input('\nPlease enter the excel report path : ')
     report_file = FileFunctions(REPORT_PATH)
     report_file.file_exists()
     report_contexts = report_file.read_xlsx_contexts_sheet()
 
-    registry_only = input('Should the file be separated by method (Registry | Else) ? This could be useful when applying through GPO. (y/n) : ')
-    if registry_only.lower() == 'y' or registry_only.lower() == 'o':
-        registry_only = True
-    else:
-        registry_only = False
+    # registry filter
+    registry_filtered = None
+    registry_filtered_args = ['-rf', '--registry-filtered']
+    for registry_filtered_arg in registry_filtered_args:
+        if registry_filtered_arg in sys.argv:
+            registry_filtered = True
+    not_registry_filtered_args = ['-nrf', '--not-registry-filtered']
+    for not_registry_filtered_arg in not_registry_filtered_args:
+        if not_registry_filtered_arg in sys.argv:
+            registry_filtered = False
+    if registry_filtered is None:    
+        registry_filtered = input('Should the file be separated by method (Registry | Else) ? This could be useful when applying through GPO. (y/n) : ')
+        if registry_filtered.lower() == 'y' or registry_filtered.lower() == 'o':
+            registry_filtered = True
+        else:
+            registry_filtered = False
 
     NUMBER_OF_CONTEXTS = report_file.get_number_of_context()
 
+    # finding lists
     CONTEXTS_LIST = []
-    for CONTEXT in range(NUMBER_OF_CONTEXTS):
-        CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
-        context_file = FileFunctions(CONTEXT_FINDING_LIST)
-        context_file.file_exists()
-        context_df = context_file.read_csv_file()
+    context_finding_lists_args = ['-f', '--finding-lists']
+    for context_finding_lists_arg in context_finding_lists_args:
+        for arg in sys.argv:
+            if context_finding_lists_arg == arg:
+                CONTEXT_FINDING_LISTS = sys.argv[sys.argv.index(arg)+1].split(',')
+                if len(CONTEXT_FINDING_LISTS) != NUMBER_OF_CONTEXTS:
+                    throw(f'Error : {NUMBER_OF_CONTEXTS} contexts were found in excel file but {len(CONTEXT_FINDING_LISTS)} finding lists were given.', 'high')
+                else:
+                    CONTEXT = 1
+                    for FINDING_LIST in CONTEXT_FINDING_LISTS:
+                        context_file = FileFunctions(FINDING_LIST)
+                        context_file.file_exists()
+                        context_df = context_file.read_csv_file()
 
-        CONTEXTS_LIST.append({
-            'ContextName' : f'Context{CONTEXT + 1}',
-            'ContextDataframe' : context_df
-        })
+                        CONTEXTS_LIST.append({
+                            'ContextName' : f'Context{CONTEXT}',
+                            'ContextDataframe' : context_df
+                        })
+                        CONTEXT += 1
+    
+    if CONTEXTS_LIST == []:
+        for CONTEXT in range(NUMBER_OF_CONTEXTS):
+            CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
+            context_file = FileFunctions(CONTEXT_FINDING_LIST)
+            context_file.file_exists()
+            context_df = context_file.read_csv_file()
+
+            CONTEXTS_LIST.append({
+                'ContextName' : f'Context{CONTEXT + 1}',
+                'ContextDataframe' : context_df
+            })
 
     parent_path = "./hardening_policies/"
     if not os.path.exists(parent_path):
@@ -611,7 +665,7 @@ elif CHOSEN_TOOL == '10':
         new_file_finding_list = CONTEXT['ContextDataframe'].merge(choosed_policies[['Name',column_name_result]], on=['Name'])
         new_file_finding_list = new_file_finding_list.rename(columns={column_name_result: "RecommendedValue"})
 
-        if registry_only:
+        if registry_filtered:
             new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
             new_file_finding_list_registry.to_csv(path_or_buf=parent_path + 'Registry_Based_Policies_' + CONTEXT['ContextName'] + '.csv',index=False)
             new_file_finding_list_no_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] != "Registry")]
@@ -643,7 +697,7 @@ elif CHOSEN_TOOL == '10':
                 if not os.path.exists(bycategory_path):
                     os.mkdir(bycategory_path)
 
-                if registry_only:
+                if registry_filtered:
                     base_name = bycategory_path + 'Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
                     new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
                     policy_subdivision(new_file_finding_list_registry, base_name)
