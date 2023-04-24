@@ -736,6 +736,16 @@ elif CHOSEN_TOOL == '10':
     except ValueError:
         throw('The lot size given is not an integer.', 'high')
 
+    for CONTEXT in range(NUMBER_OF_CONTEXTS):
+        CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
+        context_file = FileFunctions(CONTEXT_FINDING_LIST)
+        context_file.file_exists()
+        context_df = context_file.read_csv_file()
+
+        CONTEXTS_LIST.append({
+            'ContextName' : f'Context{CONTEXT + 1}',
+            'ContextDataframe' : context_df
+        })
 
     parent_path = "./hardening_policies/"
     if not os.path.exists(parent_path):
@@ -798,7 +808,6 @@ elif CHOSEN_TOOL == '10':
                     base_name = bycategory_path + CONTEXT['ContextName'] + "_" + workshop + "_" + category
                     policy_subdivision(new_file_finding_list, base_name, LOT_SIZE)
 
-    throw('Output was saved in \'hardening_policies\' folder.', 'low')
-
+    throw(f'Output was saved in \'{parent_path}\' folder.', 'low')
 else:
     throw('Tool selected not in list, exiting.', 'high')
