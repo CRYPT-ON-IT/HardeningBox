@@ -55,3 +55,15 @@ This tool will simply transform an Excel file into a Csv file or a Csv file into
 This one is a powerfull tool that will transform your finding list into PowerPoint slides.
 
 Each slide will contain policy values, and it will help you to present an Hardening project to everyone else.
+
+### 7. Merge 2 csv files and remove duplicates by "Names"
+
+This tool allows you to merge two csv files based on a column value
+
+### 8. Replace all default values with "-NODATA-"
+
+Replace default value in csv by -NODATA-, it allows a better understanding of the actual status.
+
+### 9. Excel report file to CSV
+
+This tool will transform an excel report file into multiple csv file applicable, by context, by workshop & by category
