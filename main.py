@@ -79,10 +79,7 @@ def check_arguments():
                 -xc, --report2csv : Transfrom a report file into multiple csv to apply with HardeningKitty
                     You must add -xf or --xlsx-file to specify the Excel report file path
                     You must add -f or --finding-lists to specify finding list linked to every context
-<<<<<<< HEAD
                     You must add -ls or --lot-size to specify the max number of policies to have in a file
-=======
->>>>>>> 7dece6d (Add argument check)
                     You can add -rf or --registry-filtered to specify that the output should be filtered with Registry method
                     You can add -nrf or --not-registry-filtered to specify that the output shoould not be filtered by method
                     If you have multiple contexts, you have to specify each finding list for the contexts, separated by a comma
@@ -137,7 +134,7 @@ def check_arguments():
         chosen_tool = '8'
         return chosen_tool
     
-    xc_args = ['-xc', '--report2csv']
+    xc_args = ['-cx', '--csv2report']
     if any(x in xc_args for x in sys.argv):
         chosen_tool = '9'
         return chosen_tool
@@ -190,7 +187,7 @@ if not CHOSEN_TOOL:
         9. CSV to Excel report file
         10. Excel report file to CSV
 
-    Choose your tool (1->10): """)
+    Choose your tool (1->9): """)
 
 # Add audit result to a CSV file
 if CHOSEN_TOOL == '1':
