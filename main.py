@@ -579,7 +579,6 @@ elif CHOSEN_TOOL == '10':
     else:
         registry_only = False
 
-    #!# Shall detect the number of context automatically
     NUMBER_OF_CONTEXTS = report_file.get_number_of_context()
 
     CONTEXTS_LIST = []
@@ -630,11 +629,8 @@ elif CHOSEN_TOOL == '10':
             categories = byworkshop_choosed_policies["Category"].unique()
             for category in categories:
                 new_filtered_excel_file = byworkshop_choosed_policies.loc[(report_contexts['Category'] == category)]
-                # on merge les deux tableaux en fonction de l'ID
                 new_file_finding_list = pd.merge(CONTEXT['ContextDataframe'], new_filtered_excel_file[['Name', column_name_value]], on=['Name'])
-                # on renomme la colonne ajoutée en RecommendedValue
                 new_file_finding_list = new_file_finding_list.rename(columns={column_name_value: "RecommendedValue"})
-                # on modifie le nom
                 category = category.replace(":", "-")
                 
                 bycontext_path = f"{parent_path}{CONTEXT['ContextName']}/"
