@@ -179,9 +179,10 @@ if not CHOSEN_TOOL:
         6. Transform CSV into PowerPoint slides
         7. Merge 2 csv files and remove duplicates by "Names"
         8. Replace all default values with "-NODATA-"
-        9. Excel report file to CSV
+        9. CSV to Excel report file
+        10. Excel report file to CSV
 
-    Choose your tool (1->9): """)
+    Choose your tool (1->10): """)
 
 # Add audit result to a CSV file
 if CHOSEN_TOOL == '1':
@@ -522,8 +523,135 @@ Which file_finding_list file should I look for (e.g. : filename.csv) : """)
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
-# Excel report file to CSV
+# CSV to Excel Report File
 elif CHOSEN_TOOL == '9':
+    CLIENT_NAME = ''
+    client_name_args = ['-c', '--client-name']
+    for client_name_arg in client_name_args:
+        for arg in sys.argv:
+            if client_name_arg == arg:
+                CLIENT_NAME = sys.argv[sys.argv.index(arg)+1]
+    if CLIENT_NAME == '':
+        CLIENT_NAME = input('Enter the name of your client : ')
+
+    CONTEXTS_NAMES = ''
+    contexts_names_args = ['-cn', '--contexts-names']
+    for contexts_names_arg in contexts_names_args:
+        for arg in sys.argv:
+            if contexts_names_arg == arg:
+                CONTEXTS_NAMES = sys.argv[sys.argv.index(arg)+1]
+    CONTEXTS_NAMES = CONTEXTS_NAMES.split(',')
+
+    CONTEXTS_CONFIGURATIONS = ''
+    contexts_configurations_args = ['-cn', '--contexts-configurations']
+    for contexts_configurations_arg in contexts_configurations_args:
+        for arg in sys.argv:
+            if contexts_configurations_arg == arg:
+                CONTEXTS_CONFIGURATIONS = sys.argv[sys.argv.index(arg)+1]
+    CONTEXTS_CONFIGURATIONS = CONTEXTS_CONFIGURATIONS.split(',')
+
+    CONTEXTS_LOGS = ''
+    contexts_logs_args = ['-cl', '--contexts-logs']
+    for contexts_logs_arg in contexts_logs_args:
+        for arg in sys.argv:
+            if contexts_logs_arg == arg:
+                CONTEXTS_LOGS = sys.argv[sys.argv.index(arg)+1]
+    CONTEXTS_LOGS = CONTEXTS_LOGS.split(',')
+
+    CONTEXTS_FINDING_LISTS = ''
+    contexts_finding_lists_args = ['-cf', '--contexts-finding-lists']
+    for contexts_finding_lists_arg in contexts_finding_lists_args:
+        for arg in sys.argv:
+            if contexts_finding_lists_arg == arg:
+                CONTEXTS_FINDING_LISTS = sys.argv[sys.argv.index(arg)+1]
+    CONTEXTS_FINDING_LISTS = CONTEXTS_FINDING_LISTS.split(',')
+
+    CONTEXTS = []
+
+    if CONTEXTS_NAMES != [''] and len(CONTEXTS_NAMES) == len(CONTEXTS_CONFIGURATIONS) == len(CONTEXTS_LOGS) == len(CONTEXTS_FINDING_LISTS):
+        CONTINUE = False
+        for index, value in enumerate(CONTEXTS_NAMES):
+            extract_file = FileFunctions(CONTEXTS_CONFIGURATIONS[index])
+            extract_file.file_exists()
+            extract_content = extract_file.read_csv_file()
+
+            log_file = FileFunctions(CONTEXTS_LOGS[index])
+            log_file.file_exists()
+            log_content = log_file.read_log_file()
+
+            finding_list_file = FileFunctions(CONTEXTS_FINDING_LISTS[index])
+            finding_list_file.file_exists()
+            finding_list_content = finding_list_file.read_csv_file()
+
+            CONTEXTS.append({
+                'Name' : value,
+                'Extract' : extract_content,
+                'Log' : log_content,
+                'FindingList' : finding_list_content
+            })
+
+    else:
+        CONTINUE = True
+
+    context_i = 1
+    while CONTINUE:
+        # Ask for context name
+        name_of_context = input(f'\nName of the context {context_i} : ')
+        # Ask for extract path
+        extract_path = input('Path to the configuration extract : ')
+        extract_file = FileFunctions(extract_path)
+        extract_file.file_exists()
+        extract_content = extract_file.read_csv_file()
+        # Ask for log path
+        log_path = input('Path to the hardening log file : ')
+        log_file = FileFunctions(log_path)
+        log_file.file_exists()
+        log_content = log_file.read_log_file()
+        # Ask for finding list
+        finding_list_path = input('Path to the finding list corresponding to the context : ')
+        finding_list_file = FileFunctions(finding_list_path)
+        finding_list_file.file_exists()
+        finding_list_content = finding_list_file.read_csv_file()
+        CONTEXTS.append({
+            'Name' : name_of_context,
+            'Extract' : extract_content,
+            'Log' : log_content,
+            'FindingList' : finding_list_content
+        })
+        ask = input('Would you like to add another context ? (y/n) : ')
+        if ask not in ['y', 'Y']:
+            CONTINUE = False
+        context_i+=1
+
+
+    all_policies_path = ''
+    all_policies_path_args = ['-ap', '--all-policies']
+    for all_policies_path_arg in all_policies_path_args:
+        for arg in sys.argv:
+            if all_policies_path_arg == arg:
+                all_policies_path = sys.argv[sys.argv.index(arg)+1]
+    if all_policies_path == '':
+        all_policies_path = input('Path to all policies file, a merge of every single (can be created with tool 7) : ')
+    all_policies_file = FileFunctions(all_policies_path)
+    all_policies_file.file_exists()
+    all_policies_content = all_policies_file.read_csv_file()
+
+
+    xlsx_name = ''
+    xlsx_name_args = ['-o', '--output']
+    for xlsx_name_arg in xlsx_name_args:
+        for arg in sys.argv:
+            if xlsx_name_arg == arg:
+                xlsx_name = sys.argv[sys.argv.index(arg)+1]
+    if xlsx_name == '':
+        xlsx_name = input('What is the name of the output Excel file : ')
+    
+    xlsx_file = ExcelWorkbook(xlsx_name, CONTEXTS, all_policies_content)
+
+    throw('Successfully generated report file', 'low')
+
+# Excel Report File to CSV
+elif CHOSEN_TOOL == '10':
     # report file
     REPORT_PATH = ''
     report_file_path_args = ['-xf', '--xlsx-file']
