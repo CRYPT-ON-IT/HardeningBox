@@ -747,11 +747,11 @@ elif CHOSEN_TOOL == '10':
         context_file.file_exists()
         context_df = context_file.read_csv_file()
 
-                        CONTEXTS_LIST.append({
-                            'ContextName' : f'Context{CONTEXT}',
-                            'ContextDataframe' : context_df
-                        })
-                        CONTEXT += 1
+        CONTEXTS_LIST.append({
+            'ContextName' : f'Context{CONTEXT}',
+            'ContextDataframe' : context_df
+        })
+        CONTEXT += 1
     
     if CONTEXTS_LIST == []:
         for CONTEXT in range(NUMBER_OF_CONTEXTS):
