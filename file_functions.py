@@ -62,6 +62,14 @@ class FileFunctions():
 
         return df_all_policies, df_contexts
 
+    def read_xlsx_contexts_sheet(self):
+        """
+            This function will retreive information in xlsx
+        """
+        df_contexts = pd.read_excel(self.file, "Contexts", header=1).fillna('')
+
+        return df_contexts
+
     def convert_csv_2_excel(self):
         """
             This function will transform a CSV file

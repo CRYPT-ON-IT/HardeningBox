@@ -180,7 +180,7 @@ threat-protection/security-policy-settings/'
                                 ).replace('</strong>',''))
                             line_number+=1
 
-                    self.original_dataframe.at[index, 'PossibleValues'] = possible_values
+                        self.original_dataframe.at[index, 'PossibleValues'] = possible_values
                 elif response.status_code not in [200, 404]:
                     throw(
                         f'An error occured with unexpected status code {response.status_code}',

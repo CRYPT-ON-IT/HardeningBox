@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 
+import os
 import sys
+import pandas as pd
 from Errors import throw
 from file_functions import FileFunctions
 from update_main_csv import UpdateMainCsv
@@ -79,7 +81,6 @@ def check_arguments():
                     You must add -o or --ouput-file to specify the name of the output csv file
                     Usage :
                         ./main.py -r -f <file.csv> -o <ouput.csv>
-                        ./main.py --rm-defaults-values --input-file <file.csv> --ouput-file <ouput.csv>
 
             Others :
                 -h, --help : show this help menu
@@ -130,8 +131,8 @@ def check_arguments():
         chosen_tool = '8'
         return chosen_tool
 
-    trc_args = ['-r', '--rm-defaults-values']
-    if any(x in trc_args for x in sys.argv):
+    rm_args = ['-r', '--rm-defaults-values']
+    if any(x in rm_args for x in sys.argv):
         chosen_tool = '9'
         return chosen_tool
 
@@ -176,8 +177,9 @@ if not CHOSEN_TOOL:
         7. Merge 2 csv files and remove duplicates by "Names"
         8. Create CSV contexts applicable files from Excel trace file 
         9. Replace all default values with "-NODATA-"
+        10. Excel report file to CSV
 
-    Choose your tool (1->9): """)
+    Choose your tool (1->10): """)
 
 # Add audit result to a CSV file
 if CHOSEN_TOOL == '1':
@@ -564,6 +566,94 @@ Which file_finding_list file should I look for (e.g. : filename.csv) : """)
     NEW_FILE_FINDING_LIST = file_finding_list_file.replace_defaults_values(OUTPUT_CSV)
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
+
+elif CHOSEN_TOOL == '10':
+    REPORT_PATH = input('\nPlease enter the excel report path : ')
+    report_file = FileFunctions(REPORT_PATH)
+    report_file.file_exists()
+    report_contexts = report_file.read_xlsx_contexts_sheet()
+
+    #!# Shall detect the number of context automatically
+    NUMBER_OF_CONTEXTS = input('Please enter the number of contexts : ')
+    try:
+        NUMBER_OF_CONTEXTS = int(NUMBER_OF_CONTEXTS)
+    except ValueError:
+        exit('Invalid number of contexts.')
+
+    CONTEXTS_LIST = []
+    for CONTEXT in range(NUMBER_OF_CONTEXTS):
+        CONTEXT_FINDING_LIST = input(f'Please enter the path of the finding list for context {CONTEXT + 1} : ')
+        context_file = FileFunctions(CONTEXT_FINDING_LIST)
+        context_file.file_exists()
+        CONTEXTS_LIST.append({
+            'ContextName' : f'Context{CONTEXT + 1}',
+            'ContextDataframe' : context_file.read_csv_file()
+        })
+
+    parent_path = "./hardening_policies/"
+    if not os.path.exists(parent_path):
+        os.mkdir(parent_path)
+
+    ### Create Global Hardening Files
+
+    for CONTEXT in CONTEXTS_LIST:
+        column_name_result = CONTEXT['ContextName'] + ' - ComputedResult'
+        column_name_value = CONTEXT['ContextName'] + ' - Computed Value'
+        column_name_fixed_value = CONTEXT['ContextName'] + ' - Fixed Value'
+
+        choosed_policies = report_contexts.loc[(report_contexts['Ateliers'].str.startswith("Atelier")) & (report_contexts[column_name_value] != 'to check') & (report_contexts[column_name_value] != "N/A") & (report_contexts[column_name_fixed_value] != "_")]
+
+        del CONTEXT['ContextDataframe']['RecommendedValue']
+
+        new_file_finding_list = CONTEXT['ContextDataframe'].merge(choosed_policies[['Name',column_name_result]], on=['Name'])
+        new_file_finding_list = new_file_finding_list.rename(columns={column_name_result: "RecommendedValue"})
+
+        new_file_finding_list.to_csv(path_or_buf=parent_path + CONTEXT['ContextName'] + '.csv',index=False)
+
+        ### Create Hardening Files By Workshop
+
+        cpt = 0
+        workshops = report_contexts["Ateliers"].unique()
+        for workshop in workshops:
+            byworkshop_choosed_policies = choosed_policies.loc[(report_contexts['Ateliers'] == workshop)]
+            ### For each category
+            categories = byworkshop_choosed_policies["Category"].unique()
+            for category in categories:
+                new_filtered_excel_file = byworkshop_choosed_policies.loc[(report_contexts['Category'] == category)]
+                # on merge les deux tableaux en fonction de l'ID
+                new_file_finding_list = pd.merge(CONTEXT['ContextDataframe'], new_filtered_excel_file[['Name', column_name_value]], on=['Name'])
+                # on renomme la colonne ajoutée en RecommendedValue
+                new_file_finding_list = new_file_finding_list.rename(columns={column_name_value: "RecommendedValue"})
+                # on modifie le nom
+                category = category.replace(":", "-")
+                # on vérifie la taille de la liste pour séparer
+                size = len(new_file_finding_list)
+
+                bycontext_path = f"{parent_path}{CONTEXT['ContextName']}/"
+                if not os.path.exists(bycontext_path):
+                    os.mkdir(bycontext_path)
+                byworkshop_path = f"{bycontext_path}{workshop}/"
+                if not os.path.exists(byworkshop_path):
+                    os.mkdir(byworkshop_path)
+                bycategory_path = f"{byworkshop_path}{category}/"
+                if not os.path.exists(bycategory_path):
+                    os.mkdir(bycategory_path)
+                
+                if size>15:
+                    for i in range(0,size,10):
+                        # on nomme le fichier
+                        path=bycategory_path + CONTEXT['ContextName']+"_"+workshop+"_"+category+"_lot"+str(i)+"-"+str(i+10)+".csv"
+                        if len(new_file_finding_list)>0:
+                            # on enregistre le fichier
+                            new_file_finding_list.iloc[i:i+10, :].to_csv(path_or_buf=path,index=False)
+                        cpt+=len(new_file_finding_list)
+                else :
+                    # on nomme le fichier                    
+                    path=bycategory_path + CONTEXT['ContextName']+"_"+workshop+"_"+category+".csv"
+                    if len(new_file_finding_list)>0:
+                        # on enregistre le fichier
+                        new_file_finding_list.to_csv(path_or_buf=path,index=False)
+                    cpt+=len(new_file_finding_list)
 
 else:
     throw('Tool selected not in list, exiting.', 'high')
