@@ -5,7 +5,7 @@ import sys
 import pandas as pd
 from Errors import throw
 from file_functions import FileFunctions
-from update_main_csv import UpdateMainCsv
+from update_main_csv import UpdateMainCsv, policy_subdivision
 from cis_pdf_scrapper import CISPdfScrapper
 
 
@@ -573,8 +573,14 @@ elif CHOSEN_TOOL == '10':
     report_file.file_exists()
     report_contexts = report_file.read_xlsx_contexts_sheet()
 
+    registry_only = input('Should the file be separated by method (Registry | Else) ? This could be useful when applying through GPO. (y/n) : ')
+    if registry_only.lower() == 'y' or registry_only.lower() == 'o':
+        registry_only = True
+    else:
+        registry_only = False
+
     #!# Shall detect the number of context automatically
-    NUMBER_OF_CONTEXTS = input('Please enter the number of contexts : ')
+    NUMBER_OF_CONTEXTS = input('\nPlease enter the number of contexts : ')
     try:
         NUMBER_OF_CONTEXTS = int(NUMBER_OF_CONTEXTS)
     except ValueError:
@@ -582,12 +588,14 @@ elif CHOSEN_TOOL == '10':
 
     CONTEXTS_LIST = []
     for CONTEXT in range(NUMBER_OF_CONTEXTS):
-        CONTEXT_FINDING_LIST = input(f'Please enter the path of the finding list for context {CONTEXT + 1} : ')
+        CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
         context_file = FileFunctions(CONTEXT_FINDING_LIST)
         context_file.file_exists()
+        context_df = context_file.read_csv_file()
+
         CONTEXTS_LIST.append({
             'ContextName' : f'Context{CONTEXT + 1}',
-            'ContextDataframe' : context_file.read_csv_file()
+            'ContextDataframe' : context_df
         })
 
     parent_path = "./hardening_policies/"
@@ -608,7 +616,13 @@ elif CHOSEN_TOOL == '10':
         new_file_finding_list = CONTEXT['ContextDataframe'].merge(choosed_policies[['Name',column_name_result]], on=['Name'])
         new_file_finding_list = new_file_finding_list.rename(columns={column_name_result: "RecommendedValue"})
 
-        new_file_finding_list.to_csv(path_or_buf=parent_path + CONTEXT['ContextName'] + '.csv',index=False)
+        if registry_only:
+            new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
+            new_file_finding_list_registry.to_csv(path_or_buf=parent_path + 'Registry_Based_Policies_' + CONTEXT['ContextName'] + '.csv',index=False)
+            new_file_finding_list_no_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] != "Registry")]
+            new_file_finding_list_no_registry.to_csv(path_or_buf=parent_path + 'No_Registry_Based_Policies_' + CONTEXT['ContextName'] + '.csv',index=False)
+        else:
+            new_file_finding_list.to_csv(path_or_buf=parent_path + CONTEXT['ContextName'] + '.csv',index=False)
 
         ### Create Hardening Files By Workshop
 
@@ -626,9 +640,7 @@ elif CHOSEN_TOOL == '10':
                 new_file_finding_list = new_file_finding_list.rename(columns={column_name_value: "RecommendedValue"})
                 # on modifie le nom
                 category = category.replace(":", "-")
-                # on vérifie la taille de la liste pour séparer
-                size = len(new_file_finding_list)
-
+                
                 bycontext_path = f"{parent_path}{CONTEXT['ContextName']}/"
                 if not os.path.exists(bycontext_path):
                     os.mkdir(bycontext_path)
@@ -638,22 +650,18 @@ elif CHOSEN_TOOL == '10':
                 bycategory_path = f"{byworkshop_path}{category}/"
                 if not os.path.exists(bycategory_path):
                     os.mkdir(bycategory_path)
-                
-                if size>15:
-                    for i in range(0,size,10):
-                        # on nomme le fichier
-                        path=bycategory_path + CONTEXT['ContextName']+"_"+workshop+"_"+category+"_lot"+str(i)+"-"+str(i+10)+".csv"
-                        if len(new_file_finding_list)>0:
-                            # on enregistre le fichier
-                            new_file_finding_list.iloc[i:i+10, :].to_csv(path_or_buf=path,index=False)
-                        cpt+=len(new_file_finding_list)
-                else :
-                    # on nomme le fichier                    
-                    path=bycategory_path + CONTEXT['ContextName']+"_"+workshop+"_"+category+".csv"
-                    if len(new_file_finding_list)>0:
-                        # on enregistre le fichier
-                        new_file_finding_list.to_csv(path_or_buf=path,index=False)
-                    cpt+=len(new_file_finding_list)
 
+                if registry_only:
+                    base_name = bycategory_path + 'Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
+                    policy_subdivision(new_file_finding_list_registry, base_name)
+                    base_name = bycategory_path + 'No_Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    new_file_finding_list_no_registry = new_file_finding_list.loc[(new_file_finding_list["Method"]!= "Registry")]
+                    policy_subdivision(new_file_finding_list_no_registry, base_name)
+                else:
+                    base_name = bycategory_path + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    policy_subdivision(new_file_finding_list, base_name)
+
+    throw('Output was saved in \'hardening_policies\' folder.', 'low')
 else:
     throw('Tool selected not in list, exiting.', 'high')

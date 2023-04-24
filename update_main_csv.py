@@ -295,3 +295,19 @@ to write in this folder, exiting.",
 to write in this folder, exiting.",
                   "high"
             )
+
+def policy_subdivision(dataframe: pd.DataFrame, base_name: str):
+    size = len(dataframe)
+    if size>15:
+        for i in range(0,size,10):
+            # on nomme le fichier
+            path = base_name + "_lot" + str(i) + "-" + str(i+10) + ".csv"
+            if len(dataframe)>0:
+                # on enregistre le fichier
+                dataframe.iloc[i:i+10, :].to_csv(path_or_buf=path,index=False)
+    else :
+        path = base_name + ".csv"
+        if len(dataframe)>0:
+            # on enregistre le fichier
+            dataframe.to_csv(path_or_buf=path,index=False)
+        
