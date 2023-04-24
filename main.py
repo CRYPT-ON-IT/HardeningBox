@@ -79,7 +79,10 @@ def check_arguments():
                 -xc, --report2csv : Transfrom a report file into multiple csv to apply with HardeningKitty
                     You must add -xf or --xlsx-file to specify the Excel report file path
                     You must add -f or --finding-lists to specify finding list linked to every context
+<<<<<<< HEAD
                     You must add -ls or --lot-size to specify the max number of policies to have in a file
+=======
+>>>>>>> 7dece6d (Add argument check)
                     You can add -rf or --registry-filtered to specify that the output should be filtered with Registry method
                     You can add -nrf or --not-registry-filtered to specify that the output shoould not be filtered by method
                     If you have multiple contexts, you have to specify each finding list for the contexts, separated by a comma
@@ -137,6 +140,11 @@ def check_arguments():
     xc_args = ['-xc', '--report2csv']
     if any(x in xc_args for x in sys.argv):
         chosen_tool = '9'
+        return chosen_tool
+    
+    xc_args = ['-xc', '--report2csv']
+    if any(x in xc_args for x in sys.argv):
+        chosen_tool = '10'
         return chosen_tool
 
     chosen_tool = False
@@ -742,10 +750,23 @@ elif CHOSEN_TOOL == '10':
         context_file.file_exists()
         context_df = context_file.read_csv_file()
 
-        CONTEXTS_LIST.append({
-            'ContextName' : f'Context{CONTEXT + 1}',
-            'ContextDataframe' : context_df
-        })
+                        CONTEXTS_LIST.append({
+                            'ContextName' : f'Context{CONTEXT}',
+                            'ContextDataframe' : context_df
+                        })
+                        CONTEXT += 1
+    
+    if CONTEXTS_LIST == []:
+        for CONTEXT in range(NUMBER_OF_CONTEXTS):
+            CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
+            context_file = FileFunctions(CONTEXT_FINDING_LIST)
+            context_file.file_exists()
+            context_df = context_file.read_csv_file()
+
+            CONTEXTS_LIST.append({
+                'ContextName' : f'Context{CONTEXT + 1}',
+                'ContextDataframe' : context_df
+            })
 
     parent_path = "./hardening_policies/"
     if not os.path.exists(parent_path):
