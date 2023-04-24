@@ -580,11 +580,7 @@ elif CHOSEN_TOOL == '10':
         registry_only = False
 
     #!# Shall detect the number of context automatically
-    NUMBER_OF_CONTEXTS = input('\nPlease enter the number of contexts : ')
-    try:
-        NUMBER_OF_CONTEXTS = int(NUMBER_OF_CONTEXTS)
-    except ValueError:
-        exit('Invalid number of contexts.')
+    NUMBER_OF_CONTEXTS = report_file.get_number_of_context()
 
     CONTEXTS_LIST = []
     for CONTEXT in range(NUMBER_OF_CONTEXTS):
