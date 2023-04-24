@@ -70,12 +70,6 @@ def check_arguments():
                         ./main.py -m --first-file <file1.csv> --second-file <file2.csv>
                         ./main.py --merge-2-csv --first-file <file1.csv> --second-file <file2.csv> --output <output.csv>
 
-                -t, --trace : Convert Excel trace file to CSV applicable per CONTEXT
-                    You must add -tf or --trace-file to specify the Excel trace file
-                    Usage :
-                        ./main.py -t -tf <trace_file.xlsx>
-                        ./main.py --trace --trace-file <trace_file.xlsx>
-
                 -r, --rm-defaults-values : Replace all default values with "-NODATA-"
                     You must add -f or --input-file to specify the csv file finding list
                     You must add -o or --ouput-file to specify the name of the output csv file
@@ -134,19 +128,14 @@ def check_arguments():
         chosen_tool = '7'
         return chosen_tool
 
-    trc_args = ['-tf', '--trace-file']
-    if any(x in trc_args for x in sys.argv):
-        chosen_tool = '8'
-        return chosen_tool
-
     rm_args = ['-r', '--rm-defaults-values']
     if any(x in rm_args for x in sys.argv):
-        chosen_tool = '9'
+        chosen_tool = '8'
         return chosen_tool
     
     xc_args = ['-xc', '--report2csv']
     if any(x in xc_args for x in sys.argv):
-        chosen_tool = '10'
+        chosen_tool = '9'
         return chosen_tool
 
     chosen_tool = False
@@ -188,11 +177,10 @@ if not CHOSEN_TOOL:
         5. Excel <-> CSV convertion
         6. Transform CSV into PowerPoint slides
         7. Merge 2 csv files and remove duplicates by "Names"
-        8. Create CSV contexts applicable files from Excel trace file 
-        9. Replace all default values with "-NODATA-"
-        10. Excel report file to CSV
+        8. Replace all default values with "-NODATA-"
+        9. Excel report file to CSV
 
-    Choose your tool (1->10): """)
+    Choose your tool (1->9): """)
 
 # Add audit result to a CSV file
 if CHOSEN_TOOL == '1':
@@ -504,55 +492,8 @@ elif CHOSEN_TOOL == '7':
 
     throw('Scrapped data added successfully.', 'low')
 
-# Create CSV from trace file
-elif CHOSEN_TOOL == '8':
-    TRACEFILE_FILEPATH = ''
-    tracefile_filepath_args = ['-tf', '--trace-file']
-    for tracefile_filepath_arg in tracefile_filepath_args:
-        for arg in sys.argv:
-            if tracefile_filepath_arg == arg:
-                TRACEFILE_FILEPATH = sys.argv[sys.argv.index(arg)+1]
-    if TRACEFILE_FILEPATH == '':
-        TRACEFILE_FILEPATH = input('Which trace file should I look for (e.g. : filename.xlsx) : ')
-    tracefile_file = FileFunctions(TRACEFILE_FILEPATH)
-    tracefile_file.file_exists()
-
-    # load Excel sheets
-    df_all_policies, df_contexts = tracefile_file.read_xlsx_tracefile()
-
-    contexts_columns = df_contexts.columns.values.tolist()
-
-    # count contexts
-    NB_CONTEXTS = 0
-    for column in contexts_columns:
-        if column.startswith("CONTEXT-"):
-            NB_CONTEXTS+=1
-    if NB_CONTEXTS == 0:
-        throw("No contexts were found.", "high")
-
-    # set the first row has header
-    df_contexts.columns = df_contexts.iloc[0]
-    df_contexts = df_contexts[1:]
-
-    # Check if policy has a workshop attributed
-    ws_policies = df_contexts[df_contexts["Ateliers"]!="_"]
-
-    # add contexts with fixed value to a list
-    contexts = []
-    for CONTEXT in range(NB_CONTEXTS):
-        set_policies = ws_policies[ws_policies["CONTEXT"+str(CONTEXT+1)+" - Fixed Value"]
-                                   !="to check"]
-        contexts.append(set_policies)
-
-    RESULT = tracefile_file.create_applicable_csv(contexts, df_all_policies)
-
-    if RESULT:
-        throw('Applicable CSV created successfully.', 'low')
-    else:
-        throw("Couldn't create CSV files.", "high")
-
 # Replace all default values with "-NODATA-"
-elif CHOSEN_TOOL == '9':
+elif CHOSEN_TOOL == '8':
     # input file
     FILE_FINDING_LIST_PATH = ''
     file_finding_list_path_args = ['-f', '--input-file']
@@ -580,7 +521,7 @@ Which file_finding_list file should I look for (e.g. : filename.csv) : """)
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
-elif CHOSEN_TOOL == '10':
+elif CHOSEN_TOOL == '9':
     # report file
     REPORT_PATH = ''
     report_file_path_args = ['-xf', '--xlsx-file']
