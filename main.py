@@ -79,6 +79,7 @@ def check_arguments():
                 -xc, --report2csv : Transfrom a report file into multiple csv to apply with HardeningKitty
                     You must add -xf or --xlsx-file to specify the Excel report file path
                     You must add -f or --finding-lists to specify finding list linked to every context
+                    You must add -ls or --lot-size to specify the max number of policies to have in a file
                     You can add -rf or --registry-filtered to specify that the output should be filtered with Registry method
                     You can add -nrf or --not-registry-filtered to specify that the output shoould not be filtered by method
                     If you have multiple contexts, you have to specify each finding list for the contexts, separated by a comma
@@ -521,6 +522,7 @@ Which file_finding_list file should I look for (e.g. : filename.csv) : """)
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
+# Excel report file to CSV
 elif CHOSEN_TOOL == '9':
     # report file
     REPORT_PATH = ''
@@ -588,6 +590,25 @@ elif CHOSEN_TOOL == '9':
                 'ContextDataframe' : context_df
             })
 
+    # lot size
+    LOT_SIZE = None
+    lot_size_args = ['-ls', '--lot-size']
+    for lot_size_arg in lot_size_args:
+        for arg in sys.argv:
+            if lot_size_arg == arg:
+                LOT_SIZE = sys.argv[sys.argv.index(arg)+1]
+    if LOT_SIZE is None:
+        LOT_SIZE = input('\nPlease enter the lot size (default is 10) : ')
+    
+    if LOT_SIZE == '':
+        LOT_SIZE = 10
+    
+    try:
+        LOT_SIZE = int(LOT_SIZE)
+    except ValueError:
+        throw('The lot size given is not an integer.', 'high')
+
+
     parent_path = "./hardening_policies/"
     if not os.path.exists(parent_path):
         os.mkdir(parent_path)
@@ -641,14 +662,15 @@ elif CHOSEN_TOOL == '9':
                 if registry_filtered:
                     base_name = bycategory_path + 'Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
                     new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
-                    policy_subdivision(new_file_finding_list_registry, base_name)
+                    policy_subdivision(new_file_finding_list_registry, base_name, LOT_SIZE)
                     base_name = bycategory_path + 'No_Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
                     new_file_finding_list_no_registry = new_file_finding_list.loc[(new_file_finding_list["Method"]!= "Registry")]
-                    policy_subdivision(new_file_finding_list_no_registry, base_name)
+                    policy_subdivision(new_file_finding_list_no_registry, base_name, LOT_SIZE)
                 else:
                     base_name = bycategory_path + CONTEXT['ContextName'] + "_" + workshop + "_" + category
-                    policy_subdivision(new_file_finding_list, base_name)
+                    policy_subdivision(new_file_finding_list, base_name, LOT_SIZE)
 
     throw('Output was saved in \'hardening_policies\' folder.', 'low')
+
 else:
     throw('Tool selected not in list, exiting.', 'high')
