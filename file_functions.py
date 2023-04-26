@@ -10,6 +10,7 @@ from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
+from openpyxl import Workbook
 
 class FileFunctions():
     """
@@ -36,7 +37,7 @@ class FileFunctions():
             a normal file.
         """
         try:
-            file = open(self.file, 'r', encoding='utf-8')
+            file = open(self.file, 'r', encoding='latin-1')
             text = file.read()
             file.close()
         except OSError:
@@ -420,10 +421,30 @@ class FileFunctions():
         df.to_csv(output_csv, index=False)
         return True
     
-    def get_number_of_context(self):
+    def get_number_of_context(self) -> int:
+        """This function returns the number of contexts in an excel file
+
+        Returns:
+            int: number of contexts
+        """
         df_contexts = pd.read_excel(self.file, "Contexts")
         context_number = 0
         for col in df_contexts.columns:
             if col.startswith('Context'):
                 context_number+=1
         return context_number
+
+    def create_xlsx(self) -> Workbook:
+        """Create an excel file
+
+        Returns:
+            Workbook: The workbook object of the newly created excel file
+        """
+        workbook = Workbook()
+        try:
+            workbook.save(self.file)
+        except:
+            throw('An error occured while saving the Excel file, the name might be the cause.', 'high')
+        workbook.load_workbook()
+        return workbook
+    

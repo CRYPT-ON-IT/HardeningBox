@@ -7,6 +7,7 @@ from Errors import throw
 from file_functions import FileFunctions
 from update_main_csv import UpdateMainCsv, policy_subdivision
 from cis_pdf_scrapper import CISPdfScrapper
+from excel_wokrbook import ExcelWorkbook
 
 
 def check_arguments():
@@ -184,10 +185,10 @@ if not CHOSEN_TOOL:
         6. Transform CSV into PowerPoint slides
         7. Merge 2 csv files and remove duplicates by "Names"
         8. Replace all default values with "-NODATA-"
-        9. CSV to Excel report file
-        10. Excel report file to CSV
+        9. CSV to Excel Report File
+        10. Excel Report File to CSV
 
-    Choose your tool (1->9): """)
+    Choose your tool (1->10): """)
 
 # Add audit result to a CSV file
 if CHOSEN_TOOL == '1':
@@ -468,7 +469,7 @@ elif CHOSEN_TOOL == '7':
     first_dataframe = first_file.read_csv_file()
 
     SECOND_FILEPATH = ''
-    second_filepath_args = ['-f1', '--second-file']
+    second_filepath_args = ['-f2', '--second-file']
     for second_filepath_arg in second_filepath_args:
         for arg in sys.argv:
             if second_filepath_arg == arg:
@@ -628,7 +629,6 @@ elif CHOSEN_TOOL == '9':
             CONTINUE = False
         context_i+=1
 
-
     all_policies_path = ''
     all_policies_path_args = ['-ap', '--all-policies']
     for all_policies_path_arg in all_policies_path_args:
@@ -640,7 +640,6 @@ elif CHOSEN_TOOL == '9':
     all_policies_file = FileFunctions(all_policies_path)
     all_policies_file.file_exists()
     all_policies_content = all_policies_file.read_csv_file()
-
 
     xlsx_name = ''
     xlsx_name_args = ['-o', '--output']
