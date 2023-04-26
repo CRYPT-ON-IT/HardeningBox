@@ -43,6 +43,13 @@ class FileFunctions():
         except OSError:
             throw("Couldn't read file, exiting.", "high")       
         return text
+    
+    def read_log_file(self):
+        """This function returns the content of a hardening log file
+        """
+        log_content = pd.read_table(self.file, encoding='latin-1')
+        log_content.columns = ["LOG"]
+        return log_content
 
     def read_csv_file(self):
         """
