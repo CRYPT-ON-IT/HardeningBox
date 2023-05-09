@@ -57,10 +57,18 @@ class FileFunctions():
         """
             This function will return Excel sheets from trace file
         """
-        df_all_policies = pd.read_excel("ExcelResult.xlsx", "All-Policies").fillna('')
-        df_contexts = pd.read_excel("ExcelResult.xlsx", "Contexts").fillna('')
+        df_all_policies = pd.read_excel(self.file, "All-Policies").fillna('')
+        df_contexts = pd.read_excel(self.file, "Contexts").fillna('')
 
         return df_all_policies, df_contexts
+
+    def read_xlsx_contexts_sheet(self):
+        """
+            This function will retreive information in xlsx
+        """
+        df_contexts = pd.read_excel(self.file, "Contexts", header=1).fillna('')
+
+        return df_contexts
 
     def convert_csv_2_excel(self):
         """
@@ -411,3 +419,11 @@ class FileFunctions():
         df =  df.assign(DefaultValue='-NODATA-')
         df.to_csv(output_csv, index=False)
         return True
+    
+    def get_number_of_context(self):
+        df_contexts = pd.read_excel(self.file, "Contexts")
+        context_number = 0
+        for col in df_contexts.columns:
+            if col.startswith('Context'):
+                context_number+=1
+        return context_number

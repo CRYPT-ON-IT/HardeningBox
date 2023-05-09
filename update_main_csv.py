@@ -180,7 +180,7 @@ threat-protection/security-policy-settings/'
                                 ).replace('</strong>',''))
                             line_number+=1
 
-                    self.original_dataframe.at[index, 'PossibleValues'] = possible_values
+                        self.original_dataframe.at[index, 'PossibleValues'] = possible_values
                 elif response.status_code not in [200, 404]:
                     throw(
                         f'An error occured with unexpected status code {response.status_code}',
@@ -295,3 +295,19 @@ to write in this folder, exiting.",
 to write in this folder, exiting.",
                   "high"
             )
+
+def policy_subdivision(dataframe: pd.DataFrame, base_name: str, lot_size: int):
+    size = len(dataframe)
+    if size>lot_size:
+        for i in range(0,size,lot_size):
+            # on nomme le fichier
+            path = base_name + "_lot" + str(i) + "-" + str(i+15) + ".csv"
+            if len(dataframe)>0:
+                # on enregistre le fichier
+                dataframe.iloc[i:i+lot_size, :].to_csv(path_or_buf=path,index=False)
+    else :
+        path = base_name + ".csv"
+        if len(dataframe)>0:
+            # on enregistre le fichier
+            dataframe.to_csv(path_or_buf=path,index=False)
+        

@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 
+import os
 import sys
+import pandas as pd
 from Errors import throw
 from file_functions import FileFunctions
-from update_main_csv import UpdateMainCsv
+from update_main_csv import UpdateMainCsv, policy_subdivision
 from cis_pdf_scrapper import CISPdfScrapper
 
 
@@ -50,8 +52,8 @@ def check_arguments():
                     You should add --csv2xlsx to transform a csv in an Excel file
                     or You should add --xlsx2csv to transform an Excel in a csv file
                     Usage : 
-                        ./main.py --csv2xlsx --csv-file <file.csv> --output <file.xlsx>
-                        ./main.py --xlsx2csv --xlsx-file <file.xlsx> --output <file.csv>
+                        ./main.py -x --csv2xlsx --csv-file <file.csv> --output <file.xlsx>
+                        ./main.py -x --xlsx2csv --xlsx-file <file.xlsx> --output <file.csv>
 
                 -p, --pptx : Transform a csv file into PowerPoint slides
                     You should add -csv or --csv-file to specify the csv file
@@ -68,18 +70,20 @@ def check_arguments():
                         ./main.py -m --first-file <file1.csv> --second-file <file2.csv>
                         ./main.py --merge-2-csv --first-file <file1.csv> --second-file <file2.csv> --output <output.csv>
 
-                -t, --trace : Convert Excel trace file to CSV applicable per CONTEXT
-                    You must add -tf or --trace-file to specify the Excel trace file
-                    Usage :
-                        ./main.py -t -tf <trace_file.xlsx>
-                        ./main.py --trace --trace-file <trace_file.xlsx>
-
                 -r, --rm-defaults-values : Replace all default values with "-NODATA-"
                     You must add -f or --input-file to specify the csv file finding list
                     You must add -o or --ouput-file to specify the name of the output csv file
                     Usage :
                         ./main.py -r -f <file.csv> -o <ouput.csv>
-                        ./main.py --rm-defaults-values --input-file <file.csv> --ouput-file <ouput.csv>
+
+                -xc, --report2csv : Transfrom a report file into multiple csv to apply with HardeningKitty
+                    You must add -xf or --xlsx-file to specify the Excel report file path
+                    You must add -f or --finding-lists to specify finding list linked to every context
+                    You must add -ls or --lot-size to specify the max number of policies to have in a file
+                    You can add -rf or --registry-filtered to specify that the output should be filtered with Registry method
+                    You can add -nrf or --not-registry-filtered to specify that the output shoould not be filtered by method
+                    If you have multiple contexts, you have to specify each finding list for the contexts, separated by a comma
+                        ./main.py -report2csv --report-file report.xlsx --finding-lists finding_list_1.csv,finding_list_2.csv
 
             Others :
                 -h, --help : show this help menu
@@ -125,13 +129,13 @@ def check_arguments():
         chosen_tool = '7'
         return chosen_tool
 
-    trc_args = ['-tf', '--trace-file']
-    if any(x in trc_args for x in sys.argv):
+    rm_args = ['-r', '--rm-defaults-values']
+    if any(x in rm_args for x in sys.argv):
         chosen_tool = '8'
         return chosen_tool
-
-    trc_args = ['-r', '--rm-defaults-values']
-    if any(x in trc_args for x in sys.argv):
+    
+    xc_args = ['-xc', '--report2csv']
+    if any(x in xc_args for x in sys.argv):
         chosen_tool = '9'
         return chosen_tool
 
@@ -174,8 +178,8 @@ if not CHOSEN_TOOL:
         5. Excel <-> CSV convertion
         6. Transform CSV into PowerPoint slides
         7. Merge 2 csv files and remove duplicates by "Names"
-        8. Create CSV contexts applicable files from Excel trace file 
-        9. Replace all default values with "-NODATA-"
+        8. Replace all default values with "-NODATA-"
+        9. Excel report file to CSV
 
     Choose your tool (1->9): """)
 
@@ -489,55 +493,8 @@ elif CHOSEN_TOOL == '7':
 
     throw('Scrapped data added successfully.', 'low')
 
-# Create CSV from trace file
-elif CHOSEN_TOOL == '8':
-    TRACEFILE_FILEPATH = ''
-    tracefile_filepath_args = ['-tf', '--trace-file']
-    for tracefile_filepath_arg in tracefile_filepath_args:
-        for arg in sys.argv:
-            if tracefile_filepath_arg == arg:
-                TRACEFILE_FILEPATH = sys.argv[sys.argv.index(arg)+1]
-    if TRACEFILE_FILEPATH == '':
-        TRACEFILE_FILEPATH = input('Which trace file should I look for (e.g. : filename.xlsx) : ')
-    tracefile_file = FileFunctions(TRACEFILE_FILEPATH)
-    tracefile_file.file_exists()
-
-    # load Excel sheets
-    df_all_policies, df_contexts = tracefile_file.read_xlsx_tracefile()
-
-    contexts_columns = df_contexts.columns.values.tolist()
-
-    # count contexts
-    NB_CONTEXTS = 0
-    for column in contexts_columns:
-        if column.startswith("CONTEXT-"):
-            NB_CONTEXTS+=1
-    if NB_CONTEXTS == 0:
-        throw("No contexts were found.", "high")
-
-    # set the first row has header
-    df_contexts.columns = df_contexts.iloc[0]
-    df_contexts = df_contexts[1:]
-
-    # Check if policy has a workshop attributed
-    ws_policies = df_contexts[df_contexts["Ateliers"]!="_"]
-
-    # add contexts with fixed value to a list
-    contexts = []
-    for CONTEXT in range(NB_CONTEXTS):
-        set_policies = ws_policies[ws_policies["CONTEXT"+str(CONTEXT+1)+" - Fixed Value"]
-                                   !="to check"]
-        contexts.append(set_policies)
-
-    RESULT = tracefile_file.create_applicable_csv(contexts, df_all_policies)
-
-    if RESULT:
-        throw('Applicable CSV created successfully.', 'low')
-    else:
-        throw("Couldn't create CSV files.", "high")
-
 # Replace all default values with "-NODATA-"
-elif CHOSEN_TOOL == '9':
+elif CHOSEN_TOOL == '8':
     # input file
     FILE_FINDING_LIST_PATH = ''
     file_finding_list_path_args = ['-f', '--input-file']
@@ -564,6 +521,156 @@ Which file_finding_list file should I look for (e.g. : filename.csv) : """)
     NEW_FILE_FINDING_LIST = file_finding_list_file.replace_defaults_values(OUTPUT_CSV)
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
+
+# Excel report file to CSV
+elif CHOSEN_TOOL == '9':
+    # report file
+    REPORT_PATH = ''
+    report_file_path_args = ['-xf', '--xlsx-file']
+    for report_file_path_arg in report_file_path_args:
+        for arg in sys.argv:
+            if report_file_path_arg == arg:
+                REPORT_PATH = sys.argv[sys.argv.index(arg)+1]
+    if REPORT_PATH == '':
+        REPORT_PATH = input('\nPlease enter the excel report path : ')
+    report_file = FileFunctions(REPORT_PATH)
+    report_file.file_exists()
+    report_contexts = report_file.read_xlsx_contexts_sheet()
+
+    # registry filter
+    registry_filtered = None
+    registry_filtered_args = ['-rf', '--registry-filtered']
+    for registry_filtered_arg in registry_filtered_args:
+        if registry_filtered_arg in sys.argv:
+            registry_filtered = True
+    not_registry_filtered_args = ['-nrf', '--not-registry-filtered']
+    for not_registry_filtered_arg in not_registry_filtered_args:
+        if not_registry_filtered_arg in sys.argv:
+            registry_filtered = False
+    if registry_filtered is None:    
+        registry_filtered = input('Should the file be separated by method (Registry | Else) ? This could be useful when applying through GPO. (y/n) : ')
+        if registry_filtered.lower() == 'y' or registry_filtered.lower() == 'o':
+            registry_filtered = True
+        else:
+            registry_filtered = False
+
+    NUMBER_OF_CONTEXTS = report_file.get_number_of_context()
+
+    # finding lists
+    CONTEXTS_LIST = []
+    context_finding_lists_args = ['-f', '--finding-lists']
+    for context_finding_lists_arg in context_finding_lists_args:
+        for arg in sys.argv:
+            if context_finding_lists_arg == arg:
+                CONTEXT_FINDING_LISTS = sys.argv[sys.argv.index(arg)+1].split(',')
+                if len(CONTEXT_FINDING_LISTS) != NUMBER_OF_CONTEXTS:
+                    throw(f'Error : {NUMBER_OF_CONTEXTS} contexts were found in excel file but {len(CONTEXT_FINDING_LISTS)} finding lists were given.', 'high')
+                else:
+                    CONTEXT = 1
+                    for FINDING_LIST in CONTEXT_FINDING_LISTS:
+                        context_file = FileFunctions(FINDING_LIST)
+                        context_file.file_exists()
+                        context_df = context_file.read_csv_file()
+
+                        CONTEXTS_LIST.append({
+                            'ContextName' : f'Context{CONTEXT}',
+                            'ContextDataframe' : context_df
+                        })
+                        CONTEXT += 1
+    
+    if CONTEXTS_LIST == []:
+        for CONTEXT in range(NUMBER_OF_CONTEXTS):
+            CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
+            context_file = FileFunctions(CONTEXT_FINDING_LIST)
+            context_file.file_exists()
+            context_df = context_file.read_csv_file()
+
+            CONTEXTS_LIST.append({
+                'ContextName' : f'Context{CONTEXT + 1}',
+                'ContextDataframe' : context_df
+            })
+
+    # lot size
+    LOT_SIZE = None
+    lot_size_args = ['-ls', '--lot-size']
+    for lot_size_arg in lot_size_args:
+        for arg in sys.argv:
+            if lot_size_arg == arg:
+                LOT_SIZE = sys.argv[sys.argv.index(arg)+1]
+    if LOT_SIZE is None:
+        LOT_SIZE = input('\nPlease enter the lot size (default is 10) : ')
+    
+    if LOT_SIZE == '':
+        LOT_SIZE = 10
+    
+    try:
+        LOT_SIZE = int(LOT_SIZE)
+    except ValueError:
+        throw('The lot size given is not an integer.', 'high')
+
+
+    parent_path = "./hardening_policies/"
+    if not os.path.exists(parent_path):
+        os.mkdir(parent_path)
+
+    ### Create Global Hardening Files
+
+    for CONTEXT in CONTEXTS_LIST:
+        column_name_result = CONTEXT['ContextName'] + ' - ComputedResult'
+        column_name_value = CONTEXT['ContextName'] + ' - Computed Value'
+        column_name_fixed_value = CONTEXT['ContextName'] + ' - Fixed Value'
+
+        choosed_policies = report_contexts.loc[(report_contexts['Ateliers'].str.startswith("Atelier")) & (report_contexts[column_name_value] != 'to check') & (report_contexts[column_name_value] != "N/A") & (report_contexts[column_name_fixed_value] != "_")]
+
+        del CONTEXT['ContextDataframe']['RecommendedValue']
+
+        new_file_finding_list = CONTEXT['ContextDataframe'].merge(choosed_policies[['Name',column_name_value]], on=['Name'])
+        new_file_finding_list = new_file_finding_list.rename(columns={column_name_value: "RecommendedValue"})
+
+        if registry_filtered:
+            new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
+            new_file_finding_list_registry.to_csv(path_or_buf=parent_path + 'Registry_Based_Policies_' + CONTEXT['ContextName'] + '.csv',index=False)
+            new_file_finding_list_no_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] != "Registry")]
+            new_file_finding_list_no_registry.to_csv(path_or_buf=parent_path + 'No_Registry_Based_Policies_' + CONTEXT['ContextName'] + '.csv',index=False)
+        else:
+            new_file_finding_list.to_csv(path_or_buf=parent_path + CONTEXT['ContextName'] + '.csv',index=False)
+
+        ### Create Hardening Files By Workshop
+
+        cpt = 0
+        workshops = report_contexts["Ateliers"].unique()
+        for workshop in workshops:
+            byworkshop_choosed_policies = choosed_policies.loc[(report_contexts['Ateliers'] == workshop)]
+            ### For each category
+            categories = byworkshop_choosed_policies["Category"].unique()
+            for category in categories:
+                new_filtered_excel_file = byworkshop_choosed_policies.loc[(report_contexts['Category'] == category)]
+                new_file_finding_list = pd.merge(CONTEXT['ContextDataframe'], new_filtered_excel_file[['Name', column_name_value]], on=['Name'])
+                new_file_finding_list = new_file_finding_list.rename(columns={column_name_value: "RecommendedValue"})
+                category = category.replace(":", "-")
+                
+                bycontext_path = f"{parent_path}{CONTEXT['ContextName']}/"
+                if not os.path.exists(bycontext_path):
+                    os.mkdir(bycontext_path)
+                byworkshop_path = f"{bycontext_path}{workshop}/"
+                if not os.path.exists(byworkshop_path):
+                    os.mkdir(byworkshop_path)
+                bycategory_path = f"{byworkshop_path}{category}/"
+                if not os.path.exists(bycategory_path):
+                    os.mkdir(bycategory_path)
+
+                if registry_filtered:
+                    base_name = bycategory_path + 'Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
+                    policy_subdivision(new_file_finding_list_registry, base_name, LOT_SIZE)
+                    base_name = bycategory_path + 'No_Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    new_file_finding_list_no_registry = new_file_finding_list.loc[(new_file_finding_list["Method"]!= "Registry")]
+                    policy_subdivision(new_file_finding_list_no_registry, base_name, LOT_SIZE)
+                else:
+                    base_name = bycategory_path + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    policy_subdivision(new_file_finding_list, base_name, LOT_SIZE)
+
+    throw('Output was saved in \'hardening_policies\' folder.', 'low')
 
 else:
     throw('Tool selected not in list, exiting.', 'high')
