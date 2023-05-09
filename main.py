@@ -624,8 +624,8 @@ elif CHOSEN_TOOL == '9':
 
         del CONTEXT['ContextDataframe']['RecommendedValue']
 
-        new_file_finding_list = CONTEXT['ContextDataframe'].merge(choosed_policies[['Name',column_name_result]], on=['Name'])
-        new_file_finding_list = new_file_finding_list.rename(columns={column_name_result: "RecommendedValue"})
+        new_file_finding_list = CONTEXT['ContextDataframe'].merge(choosed_policies[['Name',column_name_value]], on=['Name'])
+        new_file_finding_list = new_file_finding_list.rename(columns={column_name_value: "RecommendedValue"})
 
         if registry_filtered:
             new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
