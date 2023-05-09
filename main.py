@@ -77,6 +77,20 @@ def check_arguments():
                     Usage :
                         ./main.py -r -f <file.csv> -o <ouput.csv>
 
+                -cx, --csv2report : transform csv files into an Excel report file
+                    You must add -c or --client-name to specify your client name
+                    You must add -cn or --contexts-names to specify contexts names, separated by a comma
+                    You must add -cc or --contexts-configurations to specify context contexts configurations, separated by a comma
+                    You must add -cl or --contexts-logs to specify contexts logs, separated by a comma
+                    You must add -cf or --contexts-finding-lists to specify finding list of given context, separated by a comma
+                    You must add -ap or --all-policies to sepecify the all policies file
+                    You must add -o or --output to specify the output excel path 
+                    Usage :
+                        ./main.py --csv2report --client-name 'CRYPT.ON IT' --contexts-name Administrator,Standard --contexts-configurations /path/to/conf1,/path/to/conf2
+                        --contexts-logs /path/to/log1,/path/to/log2 --contexts-finding-lists /path/to/fl1,/path/to/fl2 --all-policies /path/to/all_policies --output here.xlsx
+                    Hint :
+                        --contexts-name, --contexts-configurations, --contexts-logs and --contexts-finding-lists might have the same number of attribute
+
                 -xc, --report2csv : Transfrom a report file into multiple csv to apply with HardeningKitty
                     You must add -xf or --xlsx-file to specify the Excel report file path
                     You must add -f or --finding-lists to specify finding list linked to every context
