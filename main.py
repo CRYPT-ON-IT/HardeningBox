@@ -754,30 +754,6 @@ elif CHOSEN_TOOL == '10':
     except ValueError:
         throw('The lot size given is not an integer.', 'high')
 
-    for CONTEXT in range(NUMBER_OF_CONTEXTS):
-        CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
-        context_file = FileFunctions(CONTEXT_FINDING_LIST)
-        context_file.file_exists()
-        context_df = context_file.read_csv_file()
-
-        CONTEXTS_LIST.append({
-            'ContextName' : f'Context{CONTEXT}',
-            'ContextDataframe' : context_df
-        })
-        CONTEXT += 1
-    
-    if CONTEXTS_LIST == []:
-        for CONTEXT in range(NUMBER_OF_CONTEXTS):
-            CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
-            context_file = FileFunctions(CONTEXT_FINDING_LIST)
-            context_file.file_exists()
-            context_df = context_file.read_csv_file()
-
-            CONTEXTS_LIST.append({
-                'ContextName' : f'Context{CONTEXT + 1}',
-                'ContextDataframe' : context_df
-            })
-
     parent_path = "./hardening_policies/"
     if not os.path.exists(parent_path):
         os.mkdir(parent_path)
