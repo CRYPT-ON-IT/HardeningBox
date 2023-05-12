@@ -766,7 +766,7 @@ elif CHOSEN_TOOL == '10':
         column_name_value = f'Context{CONTEXT_INDEX+1} - Computed Value'
         column_name_fixed_value = f'Context{CONTEXT_INDEX+1} - Fixed Value'
 
-        choosed_policies = report_contexts.loc[(report_contexts['Ateliers'].str.startswith("Atelier")) & (report_contexts[column_name_value] != 'to check') & (report_contexts[column_name_value] != "N/A") & (report_contexts[column_name_fixed_value] != "_")]
+        choosed_policies = report_contexts.loc[(report_contexts['Workshops'].str.startswith("Workshop")) & (report_contexts[column_name_value] != 'to check') & (report_contexts[column_name_value] != "N/A") & (report_contexts[column_name_fixed_value] != "_")]
 
         del CONTEXT['ContextDataframe']['RecommendedValue']
 
@@ -784,9 +784,9 @@ elif CHOSEN_TOOL == '10':
         ### Create Hardening Files By Workshop
 
         cpt = 0
-        workshops = report_contexts["Ateliers"].unique()
+        workshops = report_contexts["Workshops"].unique()
         for workshop in workshops:
-            byworkshop_choosed_policies = choosed_policies.loc[(report_contexts['Ateliers'] == workshop)]
+            byworkshop_choosed_policies = choosed_policies.loc[(report_contexts['Workshops'] == workshop)]
             ### For each category
             categories = byworkshop_choosed_policies["Category"].unique()
             for category in categories:

@@ -119,8 +119,8 @@ class ExcelWorkbook:
         for row in sheet.iter_rows(max_row=160, max_col=50):
             for cell in row:
                 cell.fill = PatternFill("solid", fgColor="FFFFFF")
-        worksheet_dashboards_ateliers = self.workbook.create_sheet(index=1, title='Dashboards - Ateliers')
-        for row in worksheet_dashboards_ateliers.iter_rows(max_row=55, max_col=71):
+        worksheet_dashboards_workshops = self.workbook.create_sheet(index=1, title='Dashboards - Workshops')
+        for row in worksheet_dashboards_workshops.iter_rows(max_row=55, max_col=71):
             for cell in row:
                 cell.fill = PatternFill("solid", fgColor="FFFFFF")
     
@@ -404,7 +404,7 @@ class ExcelWorkbook:
         for columns in range(number_column_start, number_column_start + 11):
             column_letter = get_column_letter(columns)
             list_columns.append(column_letter)
-        worksheet[list_columns[0] + '2'] = 'Ateliers'
+        worksheet[list_columns[0] + '2'] = 'Workshops'
         worksheet[list_columns[1] + '2'] = 'All Passed'
         worksheet[list_columns[2] + '2'] = 'At least one "to check"'
 
@@ -583,18 +583,18 @@ class ExcelWorkbook:
         """
         Create a table to count policies by workshop
         """
-        worksheet['D8'] = 'Ateliers'
+        worksheet['D8'] = 'Workshops'
         worksheet['D8'].font = FONT_COLOR_BLACK_BOLD
-        worksheet['D9'] = 'Politiques restantes'
+        worksheet['D9'] = 'Remaining policies'
         worksheet['F9'] = '=150-SUM(F10:F17)'
         worksheet['D18'] = 'Total*'
         worksheet['D19'] = 'Total (unique)'
         worksheet['F18'] = '=SUM(F10:F17)'
-        worksheet['F19'] = '=COUNTIF(table_contexts[Ateliers],"<>_")'
+        worksheet['F19'] = '=COUNTIF(table_contexts[Workshops],"<>_")'
         for cell in range(10, 18):
-            worksheet['D' + str(cell)] = 'Atelier-' + str(cell-9)
+            worksheet['D' + str(cell)] = 'Workshop-' + str(cell-9)
             worksheet['F' + str(cell)] =\
-                '=COUNTIF(table_contexts[Ateliers],CONCATENATE("*",D' + str(cell) + ',"*"))'
+                '=COUNTIF(table_contexts[Workshops],CONCATENATE("*",D' + str(cell) + ',"*"))'
         for cell in range(9, 18):
             worksheet['D' + str(cell)].border = BORDER_COMPLETE_BLACK
             worksheet['D' + str(cell)].alignment = ALIGNMENT_HORIZONTAL_CENTER
@@ -604,7 +604,7 @@ class ExcelWorkbook:
             worksheet['D' + str(cell)].font = FONT_COLOR_BLACK_BOLD
             worksheet['F' + str(cell)].font = FONT_COLOR_BLACK_BOLD
         worksheet['D21'] =\
-            '*Comprend des doublons de politiques si celles-ci ont été vues lors de plusieurs ateliers'
+            '*Include duplicate of policies if they have been adressed during multiple workshops.'
         worksheet['D21'].alignment = Alignment(vertical='top', wrapText=True)
         worksheet.merge_cells('D21:F24')
 
@@ -617,7 +617,7 @@ class ExcelWorkbook:
         data = Reference(worksheet, min_col=6, max_col=6, min_row=10, max_row=17)
         pie.add_data(data, titles_from_data=False)
         pie.set_categories(labels)
-        pie.title = "Policies by workshops"
+        pie.title = "Policies by workshop"
         pie.style = 2
         _from = AnchorMarker(
             col = 10,
@@ -1022,7 +1022,7 @@ class ExcelWorkbook:
             Launch all functions to create the entire sheet
             """
             workbook = load_workbook(self.path, data_only=False)
-            worksheet = workbook['Dashboards - Ateliers']
+            worksheet = workbook['Dashboards - Workshops']
             for columns in range(1, 71):
                 worksheet.column_dimensions[get_column_letter(columns)].width = 11
             worksheet.column_dimensions['B'].width = 19.5
@@ -1039,16 +1039,16 @@ class ExcelWorkbook:
         worksheet['B3'] = 'Number of Categories'
         worksheet['C2'] = '=COUNTIF(All_policies[ID],"<>")'
         worksheet['C3'] = '=COUNTA(_xlfn.UNIQUE(All_policies[Category]))'
-        worksheet['B5'] = 'Ateliers'
+        worksheet['B5'] = 'Workshops'
         worksheet['B5'].font = FONT_COLOR_BLACK_BOLD
-        worksheet['B6'] = 'Politiques restantes'
+        worksheet['B6'] = 'Remaining policies'
         worksheet['C6'] = '=150-C15'
         worksheet['B15'] = 'Total'
         worksheet['C15'] = '=SUM(C7:C14)'
         for cell in range(7, 15):
-            worksheet['B' + str(cell)] = 'Atelier-' + str(cell-6)
+            worksheet['B' + str(cell)] = 'Workshop-' + str(cell-6)
             worksheet['C' + str(cell)] =\
-                '=COUNTIF(table_contexts[Ateliers],CONCATENATE("*",B' + str(cell) + ',"*"))'
+                '=COUNTIF(table_contexts[Workshops],CONCATENATE("*",B' + str(cell) + ',"*"))'
         self.pie_chart_policies_by_workshop_on_workshop_dashboard(worksheet)
 
     def pie_chart_policies_by_workshop_on_workshop_dashboard(self, worksheet):
@@ -1060,7 +1060,7 @@ class ExcelWorkbook:
         data = Reference(worksheet, min_col=3, max_col=3, min_row=7, max_row=14)
         pie.add_data(data, titles_from_data=False)
         pie.set_categories(labels)
-        pie.title = "Policies by workshops"
+        pie.title = "Policies by workshop"
         pie.style = 2
         _from = AnchorMarker(
             col = 4,
@@ -1214,7 +1214,7 @@ class ExcelWorkbook:
                                 '3:' + get_column_letter(column+5) + '4')
             worksheet[get_column_letter(column+1) + '6'] = 'Policies'
             worksheet[get_column_letter(column+2) + '6'] =\
-                '=COUNTIF(table_contexts[Ateliers],CONCATENATE("*","Atelier-' + str(workshops) + '","*"))'
+                '=COUNTIF(table_contexts[Workshops],CONCATENATE("*","Workshop-' + str(workshops) + '","*"))'
 
             context_index = 1
             starting_row = 7
@@ -1242,13 +1242,13 @@ class ExcelWorkbook:
         worksheet[get_column_letter(column+1) + str(start_row+5)].fill =\
             PatternFill(fill_type='solid', fgColor='00A2FF')
         worksheet[get_column_letter(column+2) + str(start_row+2)] =\
-            '=COUNTIFS(table_contexts[Context' + str(num_context) + ' - Computed Severity],' + get_column_letter(column+1) + str(start_row+2) + ',table_contexts[Ateliers],"*Atelier-' + str(workshops) + '*",table_contexts[Context' + str(num_context) + '],TRUE)'
+            '=COUNTIFS(table_contexts[Context' + str(num_context) + ' - Computed Severity],' + get_column_letter(column+1) + str(start_row+2) + ',table_contexts[Workshops],"*Workshop-' + str(workshops) + '*",table_contexts[Context' + str(num_context) + '],TRUE)'
         worksheet[get_column_letter(column+2) + str(start_row+3)] =\
-            '=COUNTIFS(table_contexts[Context' + str(num_context) + ' - Computed Severity],' + get_column_letter(column+1) + str(start_row+3) + ',table_contexts[Ateliers],"*Atelier-' + str(workshops) + '*",table_contexts[Context' + str(num_context) + '],TRUE)'
+            '=COUNTIFS(table_contexts[Context' + str(num_context) + ' - Computed Severity],' + get_column_letter(column+1) + str(start_row+3) + ',table_contexts[Workshops],"*Workshop-' + str(workshops) + '*",table_contexts[Context' + str(num_context) + '],TRUE)'
         worksheet[get_column_letter(column+2) + str(start_row+4)] =\
-            '=COUNTIFS(table_contexts[Context' + str(num_context) + ' - Computed Severity],' + get_column_letter(column+1) + str(start_row+4) + ',table_contexts[Ateliers],"*Atelier-' + str(workshops) + '*",table_contexts[Context' + str(num_context) + '],TRUE)'
+            '=COUNTIFS(table_contexts[Context' + str(num_context) + ' - Computed Severity],' + get_column_letter(column+1) + str(start_row+4) + ',table_contexts[Workshops],"*Workshop-' + str(workshops) + '*",table_contexts[Context' + str(num_context) + '],TRUE)'
         worksheet[get_column_letter(column+2) + str(start_row+5)] =\
-            '=COUNTIFS(table_contexts[Context' + str(num_context) + ' - Computed Severity],' + get_column_letter(column+1) + str(start_row+5) + ',table_contexts[Ateliers],"*Atelier-' + str(workshops) + '*",table_contexts[Context' + str(num_context) + '],TRUE)'
+            '=COUNTIFS(table_contexts[Context' + str(num_context) + ' - Computed Severity],' + get_column_letter(column+1) + str(start_row+5) + ',table_contexts[Workshops],"*Workshop-' + str(workshops) + '*",table_contexts[Context' + str(num_context) + '],TRUE)'
         pie = PieChart()
         labels = Reference(worksheet, min_col=column+1,
                         max_col=column+1, min_row=start_row+2, max_row=start_row+5)
