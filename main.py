@@ -7,6 +7,7 @@ from Errors import throw
 from file_functions import FileFunctions
 from update_main_csv import UpdateMainCsv, policy_subdivision
 from cis_pdf_scrapper import CISPdfScrapper
+from excel_wokrbook import ExcelWorkbook
 
 
 def check_arguments():
@@ -76,6 +77,20 @@ def check_arguments():
                     Usage :
                         ./main.py -r -f <file.csv> -o <ouput.csv>
 
+                -cx, --csv2report : transform csv files into an Excel report file
+                    You must add -c or --client-name to specify your client name
+                    You must add -cn or --contexts-names to specify contexts names, separated by a comma
+                    You must add -cc or --contexts-configurations to specify context contexts configurations, separated by a comma
+                    You must add -cl or --contexts-logs to specify contexts logs, separated by a comma
+                    You must add -cf or --contexts-finding-lists to specify finding list of given context, separated by a comma
+                    You must add -ap or --all-policies to sepecify the all policies file
+                    You must add -o or --output to specify the output excel path 
+                    Usage :
+                        ./main.py --csv2report --client-name 'CRYPT.ON IT' --contexts-name Administrator,Standard --contexts-configurations /path/to/conf1,/path/to/conf2
+                        --contexts-logs /path/to/log1,/path/to/log2 --contexts-finding-lists /path/to/fl1,/path/to/fl2 --all-policies /path/to/all_policies --output here.xlsx
+                    Hint :
+                        --contexts-name, --contexts-configurations, --contexts-logs and --contexts-finding-lists might have the same number of attribute
+
                 -xc, --report2csv : Transfrom a report file into multiple csv to apply with HardeningKitty
                     You must add -xf or --xlsx-file to specify the Excel report file path
                     You must add -f or --finding-lists to specify finding list linked to every context
@@ -134,9 +149,14 @@ def check_arguments():
         chosen_tool = '8'
         return chosen_tool
     
-    xc_args = ['-xc', '--report2csv']
+    xc_args = ['-cx', '--csv2report']
     if any(x in xc_args for x in sys.argv):
         chosen_tool = '9'
+        return chosen_tool
+    
+    xc_args = ['-xc', '--report2csv']
+    if any(x in xc_args for x in sys.argv):
+        chosen_tool = '10'
         return chosen_tool
 
     chosen_tool = False
@@ -179,9 +199,10 @@ if not CHOSEN_TOOL:
         6. Transform CSV into PowerPoint slides
         7. Merge 2 csv files and remove duplicates by "Names"
         8. Replace all default values with "-NODATA-"
-        9. Excel report file to CSV
+        9. CSV to Excel Report File
+        10. Excel Report File to CSV
 
-    Choose your tool (1->9): """)
+    Choose your tool (1->10): """)
 
 # Add audit result to a CSV file
 if CHOSEN_TOOL == '1':
@@ -462,7 +483,7 @@ elif CHOSEN_TOOL == '7':
     first_dataframe = first_file.read_csv_file()
 
     SECOND_FILEPATH = ''
-    second_filepath_args = ['-f1', '--second-file']
+    second_filepath_args = ['-f2', '--second-file']
     for second_filepath_arg in second_filepath_args:
         for arg in sys.argv:
             if second_filepath_arg == arg:
@@ -522,8 +543,133 @@ Which file_finding_list file should I look for (e.g. : filename.csv) : """)
 
     throw('Microsoft Link and Possible Values columns added successfully.', 'low')
 
-# Excel report file to CSV
+# CSV to Excel Report File
 elif CHOSEN_TOOL == '9':
+    CLIENT_NAME = ''
+    client_name_args = ['-c', '--client-name']
+    for client_name_arg in client_name_args:
+        for arg in sys.argv:
+            if client_name_arg == arg:
+                CLIENT_NAME = sys.argv[sys.argv.index(arg)+1]
+    if CLIENT_NAME == '':
+        CLIENT_NAME = input('Enter the name of your client : ')
+
+    CONTEXTS_NAMES = ''
+    contexts_names_args = ['-cn', '--contexts-names']
+    for contexts_names_arg in contexts_names_args:
+        for arg in sys.argv:
+            if contexts_names_arg == arg:
+                CONTEXTS_NAMES = sys.argv[sys.argv.index(arg)+1]
+    CONTEXTS_NAMES = CONTEXTS_NAMES.split(',')
+
+    CONTEXTS_CONFIGURATIONS = ''
+    contexts_configurations_args = ['-cn', '--contexts-configurations']
+    for contexts_configurations_arg in contexts_configurations_args:
+        for arg in sys.argv:
+            if contexts_configurations_arg == arg:
+                CONTEXTS_CONFIGURATIONS = sys.argv[sys.argv.index(arg)+1]
+    CONTEXTS_CONFIGURATIONS = CONTEXTS_CONFIGURATIONS.split(',')
+
+    CONTEXTS_LOGS = ''
+    contexts_logs_args = ['-cl', '--contexts-logs']
+    for contexts_logs_arg in contexts_logs_args:
+        for arg in sys.argv:
+            if contexts_logs_arg == arg:
+                CONTEXTS_LOGS = sys.argv[sys.argv.index(arg)+1]
+    CONTEXTS_LOGS = CONTEXTS_LOGS.split(',')
+
+    CONTEXTS_FINDING_LISTS = ''
+    contexts_finding_lists_args = ['-cf', '--contexts-finding-lists']
+    for contexts_finding_lists_arg in contexts_finding_lists_args:
+        for arg in sys.argv:
+            if contexts_finding_lists_arg == arg:
+                CONTEXTS_FINDING_LISTS = sys.argv[sys.argv.index(arg)+1]
+    CONTEXTS_FINDING_LISTS = CONTEXTS_FINDING_LISTS.split(',')
+
+    CONTEXTS = []
+
+    if CONTEXTS_NAMES != [''] and len(CONTEXTS_NAMES) == len(CONTEXTS_CONFIGURATIONS) == len(CONTEXTS_LOGS) == len(CONTEXTS_FINDING_LISTS):
+        CONTINUE = False
+        for index, value in enumerate(CONTEXTS_NAMES):
+            extract_file = FileFunctions(CONTEXTS_CONFIGURATIONS[index])
+            extract_file.file_exists()
+            extract_content = extract_file.read_csv_file()
+
+            log_file = FileFunctions(CONTEXTS_LOGS[index])
+            log_file.file_exists()
+            log_content = log_file.read_log_file()
+
+            finding_list_file = FileFunctions(CONTEXTS_FINDING_LISTS[index])
+            finding_list_file.file_exists()
+            finding_list_content = finding_list_file.read_csv_file()
+
+            CONTEXTS.append({
+                'Name' : value,
+                'Extract' : extract_content,
+                'Log' : log_content,
+                'FindingList' : finding_list_content
+            })
+
+    else:
+        CONTINUE = True
+
+    context_i = 1
+    while CONTINUE:
+        # Ask for context name
+        name_of_context = input(f'\nName of the context {context_i} : ')
+        # Ask for extract path
+        extract_path = input('Path to the configuration extract : ')
+        extract_file = FileFunctions(extract_path)
+        extract_file.file_exists()
+        extract_content = extract_file.read_csv_file()
+        # Ask for log path
+        log_path = input('Path to the hardening log file : ')
+        log_file = FileFunctions(log_path)
+        log_file.file_exists()
+        log_content = log_file.read_log_file()
+        # Ask for finding list
+        finding_list_path = input('Path to the finding list corresponding to the context : ')
+        finding_list_file = FileFunctions(finding_list_path)
+        finding_list_file.file_exists()
+        finding_list_content = finding_list_file.read_csv_file()
+        CONTEXTS.append({
+            'Name' : name_of_context,
+            'Extract' : extract_content,
+            'Log' : log_content,
+            'FindingList' : finding_list_content
+        })
+        ask = input('Would you like to add another context ? (y/n) : ')
+        if ask not in ['y', 'Y']:
+            CONTINUE = False
+        context_i+=1
+
+    all_policies_path = ''
+    all_policies_path_args = ['-ap', '--all-policies']
+    for all_policies_path_arg in all_policies_path_args:
+        for arg in sys.argv:
+            if all_policies_path_arg == arg:
+                all_policies_path = sys.argv[sys.argv.index(arg)+1]
+    if all_policies_path == '':
+        all_policies_path = input('Path to all policies file, a merge of every single (can be created with tool 7) : ')
+    all_policies_file = FileFunctions(all_policies_path)
+    all_policies_file.file_exists()
+    all_policies_content = all_policies_file.read_csv_file()
+
+    xlsx_name = ''
+    xlsx_name_args = ['-o', '--output']
+    for xlsx_name_arg in xlsx_name_args:
+        for arg in sys.argv:
+            if xlsx_name_arg == arg:
+                xlsx_name = sys.argv[sys.argv.index(arg)+1]
+    if xlsx_name == '':
+        xlsx_name = input('What is the name of the output Excel file : ')
+    
+    xlsx_file = ExcelWorkbook(xlsx_name, CONTEXTS, all_policies_content)
+
+    throw('Successfully generated report file', 'low')
+
+# Excel Report File to CSV
+elif CHOSEN_TOOL == '10':
     # report file
     REPORT_PATH = ''
     report_file_path_args = ['-xf', '--xlsx-file']
@@ -555,6 +701,7 @@ elif CHOSEN_TOOL == '9':
             registry_filtered = False
 
     NUMBER_OF_CONTEXTS = report_file.get_number_of_context()
+    CONTEXTS_NAMES = report_file.get_contexts_names()
 
     # finding lists
     CONTEXTS_LIST = []
@@ -566,27 +713,27 @@ elif CHOSEN_TOOL == '9':
                 if len(CONTEXT_FINDING_LISTS) != NUMBER_OF_CONTEXTS:
                     throw(f'Error : {NUMBER_OF_CONTEXTS} contexts were found in excel file but {len(CONTEXT_FINDING_LISTS)} finding lists were given.', 'high')
                 else:
-                    CONTEXT = 1
+                    CONTEXT = 0
                     for FINDING_LIST in CONTEXT_FINDING_LISTS:
                         context_file = FileFunctions(FINDING_LIST)
                         context_file.file_exists()
                         context_df = context_file.read_csv_file()
 
                         CONTEXTS_LIST.append({
-                            'ContextName' : f'Context{CONTEXT}',
+                            'ContextName' : CONTEXTS_NAMES[CONTEXT],
                             'ContextDataframe' : context_df
                         })
                         CONTEXT += 1
     
     if CONTEXTS_LIST == []:
         for CONTEXT in range(NUMBER_OF_CONTEXTS):
-            CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
+            CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context \"{CONTEXTS_NAMES[CONTEXT]}\" : ')
             context_file = FileFunctions(CONTEXT_FINDING_LIST)
             context_file.file_exists()
             context_df = context_file.read_csv_file()
 
             CONTEXTS_LIST.append({
-                'ContextName' : f'Context{CONTEXT + 1}',
+                'ContextName' : CONTEXTS_NAMES[CONTEXT],
                 'ContextDataframe' : context_df
             })
 
@@ -608,19 +755,18 @@ elif CHOSEN_TOOL == '9':
     except ValueError:
         throw('The lot size given is not an integer.', 'high')
 
-
     parent_path = "./hardening_policies/"
     if not os.path.exists(parent_path):
         os.mkdir(parent_path)
 
     ### Create Global Hardening Files
 
-    for CONTEXT in CONTEXTS_LIST:
-        column_name_result = CONTEXT['ContextName'] + ' - ComputedResult'
-        column_name_value = CONTEXT['ContextName'] + ' - Computed Value'
-        column_name_fixed_value = CONTEXT['ContextName'] + ' - Fixed Value'
+    for CONTEXT_INDEX, CONTEXT in enumerate(CONTEXTS_LIST):
+        column_name_result = f'Context{CONTEXT_INDEX+1} - ComputedResult'
+        column_name_value = f'Context{CONTEXT_INDEX+1} - Computed Value'
+        column_name_fixed_value = f'Context{CONTEXT_INDEX+1} - Fixed Value'
 
-        choosed_policies = report_contexts.loc[(report_contexts['Ateliers'].str.startswith("Atelier")) & (report_contexts[column_name_value] != 'to check') & (report_contexts[column_name_value] != "N/A") & (report_contexts[column_name_fixed_value] != "_")]
+        choosed_policies = report_contexts.loc[(report_contexts['Workshops'].str.startswith("Workshop")) & (report_contexts[column_name_value] != 'to check') & (report_contexts[column_name_value] != "N/A") & (report_contexts[column_name_fixed_value] != "_")]
 
         del CONTEXT['ContextDataframe']['RecommendedValue']
 
@@ -638,9 +784,9 @@ elif CHOSEN_TOOL == '9':
         ### Create Hardening Files By Workshop
 
         cpt = 0
-        workshops = report_contexts["Ateliers"].unique()
+        workshops = report_contexts["Workshops"].unique()
         for workshop in workshops:
-            byworkshop_choosed_policies = choosed_policies.loc[(report_contexts['Ateliers'] == workshop)]
+            byworkshop_choosed_policies = choosed_policies.loc[(report_contexts['Workshops'] == workshop)]
             ### For each category
             categories = byworkshop_choosed_policies["Category"].unique()
             for category in categories:
@@ -670,7 +816,6 @@ elif CHOSEN_TOOL == '9':
                     base_name = bycategory_path + CONTEXT['ContextName'] + "_" + workshop + "_" + category
                     policy_subdivision(new_file_finding_list, base_name, LOT_SIZE)
 
-    throw('Output was saved in \'hardening_policies\' folder.', 'low')
-
+    throw(f'Output was saved in \'{parent_path}\' folder.', 'low')
 else:
     throw('Tool selected not in list, exiting.', 'high')

@@ -7,3 +7,4 @@ __pycache__
 *.pptx
 *.DS_Store
 launch.json
+*.log

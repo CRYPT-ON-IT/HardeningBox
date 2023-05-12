@@ -10,6 +10,7 @@ from pptx.enum.text import MSO_ANCHOR
 from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
+from openpyxl import Workbook
 
 class FileFunctions():
     """
@@ -36,12 +37,19 @@ class FileFunctions():
             a normal file.
         """
         try:
-            file = open(self.file, 'r', encoding='utf-8')
+            file = open(self.file, 'r', encoding='latin-1')
             text = file.read()
             file.close()
         except OSError:
             throw("Couldn't read file, exiting.", "high")       
         return text
+    
+    def read_log_file(self):
+        """This function returns the content of a hardening log file
+        """
+        log_content = pd.read_table(self.file, encoding='latin-1')
+        log_content.columns = ["LOG"]
+        return log_content
 
     def read_csv_file(self):
         """
@@ -140,7 +148,7 @@ class FileFunctions():
         subtitle.text = "Author"
 
         # Creating policies slides 
-        for index, policy in hardening_dataframe.iterrows():
+        for _, policy in hardening_dataframe.iterrows():
             tab_slide_layout = prs.slide_layouts[6]
             tab_slide = prs.slides.add_slide(tab_slide_layout)
             shapes = tab_slide.shapes
@@ -420,10 +428,39 @@ class FileFunctions():
         df.to_csv(output_csv, index=False)
         return True
     
-    def get_number_of_context(self):
+    def get_number_of_context(self) -> int:
+        """This function returns the number of contexts in an excel file
+
+        Returns:
+            int: number of contexts
+        """
         df_contexts = pd.read_excel(self.file, "Contexts")
         context_number = 0
         for col in df_contexts.columns:
             if col.startswith('Context'):
                 context_number+=1
         return context_number
+    
+    def get_contexts_names(self) -> list[str]:
+        """This function return a list containing names of contexts in excel file
+
+        Returns:
+            list[str]: List of contexts names
+        """
+        df_contexts = pd.read_excel(self.file, "Contexts")
+        return [col for col in df_contexts.columns if col.startswith('Context')]
+
+    def create_xlsx(self) -> Workbook:
+        """Create an excel file
+
+        Returns:
+            Workbook: The workbook object of the newly created excel file
+        """
+        workbook = Workbook()
+        try:
+            workbook.save(self.file)
+        except:
+            throw('An error occured while saving the Excel file, the name might be the cause.', 'high')
+        workbook.load_workbook()
+        return workbook
+    
