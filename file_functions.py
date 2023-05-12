@@ -148,7 +148,7 @@ class FileFunctions():
         subtitle.text = "Author"
 
         # Creating policies slides 
-        for index, policy in hardening_dataframe.iterrows():
+        for _, policy in hardening_dataframe.iterrows():
             tab_slide_layout = prs.slide_layouts[6]
             tab_slide = prs.slides.add_slide(tab_slide_layout)
             shapes = tab_slide.shapes
@@ -440,6 +440,15 @@ class FileFunctions():
             if col.startswith('Context'):
                 context_number+=1
         return context_number
+    
+    def get_contexts_names(self) -> list[str]:
+        """This function return a list containing names of contexts in excel file
+
+        Returns:
+            list[str]: List of contexts names
+        """
+        df_contexts = pd.read_excel(self.file, "Contexts")
+        return [col for col in df_contexts.columns if col.startswith('Context')]
 
     def create_xlsx(self) -> Workbook:
         """Create an excel file

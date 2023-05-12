@@ -701,6 +701,7 @@ elif CHOSEN_TOOL == '10':
             registry_filtered = False
 
     NUMBER_OF_CONTEXTS = report_file.get_number_of_context()
+    CONTEXTS_NAMES = report_file.get_contexts_names()
 
     # finding lists
     CONTEXTS_LIST = []
@@ -719,20 +720,20 @@ elif CHOSEN_TOOL == '10':
                         context_df = context_file.read_csv_file()
 
                         CONTEXTS_LIST.append({
-                            'ContextName' : f'Context{CONTEXT}',
+                            'ContextName' : CONTEXTS_NAMES[CONTEXT],
                             'ContextDataframe' : context_df
                         })
                         CONTEXT += 1
     
     if CONTEXTS_LIST == []:
         for CONTEXT in range(NUMBER_OF_CONTEXTS):
-            CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context {CONTEXT + 1} : ')
+            CONTEXT_FINDING_LIST = input(f'\nPlease enter the path of the finding list for context \"{CONTEXTS_NAMES[CONTEXT]}\" : ')
             context_file = FileFunctions(CONTEXT_FINDING_LIST)
             context_file.file_exists()
             context_df = context_file.read_csv_file()
 
             CONTEXTS_LIST.append({
-                'ContextName' : f'Context{CONTEXT + 1}',
+                'ContextName' : CONTEXTS_NAMES[CONTEXT],
                 'ContextDataframe' : context_df
             })
 
@@ -760,10 +761,10 @@ elif CHOSEN_TOOL == '10':
 
     ### Create Global Hardening Files
 
-    for CONTEXT in CONTEXTS_LIST:
-        column_name_result = CONTEXT['ContextName'] + ' - ComputedResult'
-        column_name_value = CONTEXT['ContextName'] + ' - Computed Value'
-        column_name_fixed_value = CONTEXT['ContextName'] + ' - Fixed Value'
+    for CONTEXT_INDEX, CONTEXT in enumerate(CONTEXTS_LIST):
+        column_name_result = f'Context{CONTEXT_INDEX+1} - ComputedResult'
+        column_name_value = f'Context{CONTEXT_INDEX+1} - Computed Value'
+        column_name_fixed_value = f'Context{CONTEXT_INDEX+1} - Fixed Value'
 
         choosed_policies = report_contexts.loc[(report_contexts['Ateliers'].str.startswith("Atelier")) & (report_contexts[column_name_value] != 'to check') & (report_contexts[column_name_value] != "N/A") & (report_contexts[column_name_fixed_value] != "_")]
 
