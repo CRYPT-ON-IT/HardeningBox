@@ -713,7 +713,7 @@ elif CHOSEN_TOOL == '10':
                 if len(CONTEXT_FINDING_LISTS) != NUMBER_OF_CONTEXTS:
                     throw(f'Error : {NUMBER_OF_CONTEXTS} contexts were found in excel file but {len(CONTEXT_FINDING_LISTS)} finding lists were given.', 'high')
                 else:
-                    CONTEXT = 1
+                    CONTEXT = 0
                     for FINDING_LIST in CONTEXT_FINDING_LISTS:
                         context_file = FileFunctions(FINDING_LIST)
                         context_file.file_exists()
