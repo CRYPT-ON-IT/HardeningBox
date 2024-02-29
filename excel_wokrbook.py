@@ -804,7 +804,7 @@ class ExcelWorkbook:
         worksheet['O' + str(start_row)].fill = GREEN_FILL
         worksheet['O' + str(start_row)].alignment = ALIGNMENT_CENTER_CENTER
         worksheet.merge_cells('O' + str(start_row) + ':AD' + str(start_row+1))
-        number_category = pd.read_excel('lbpam_final.xlsx', sheet_name='All-Policies')['Category'].nunique() + 3
+        number_category = pd.read_excel(self.path, sheet_name='All-Policies')['Category'].nunique() + 3
         worksheet['O' + str(start_row+4)] = ArrayFormula(ref='O' + str(start_row+4) + ':O' +
                                                         str(start_row+number_category),
                                                         text='=_xlfn.UNIQUE(table_contexts[Category])')
