@@ -79,7 +79,7 @@ class CISPdfScrapper:
     def ScrapPdfData(self):
         self.LimitTxtToPoliciesOnly()
         # Transform text into a list of policies, split is based on title : "1.1.1 (L1)" with a regex
-        cis_policies = re.split(r"(\d+[\.\d+]+ .*\nProfile Applicability)",self.pdf2txt)
+        cis_policies = re.split(r"(\d+[\.\d+]+ \([A-Z0-9]{2}\) .*?Profile Applicability:)",self.pdf2txt, flags=re.DOTALL)
         cis_policies.pop(0)
         cis_policies = [''.join(cis_policies[i:i+2]) for i in range(0, len(cis_policies), 2)]
 
@@ -193,6 +193,6 @@ class CISPdfScrapper:
             # parse policy name
             level = self.ParsePolicyName(policy_name)
 
-            f = open(self.output_filepath, 'a')
+            f = open(self.output_filepath, 'a', encoding="utf-8")
             f.write('"'+id+'","'+level+'","'+policy_name+'","'+defaultvalue_content+'","'+recommended_value+'","'+impact_content+'","'+description_content+'","'+rationale_content+'","'+remediation_content+'"\n')
             f.close()
