@@ -153,6 +153,26 @@ class FileFunctions():
             tab_slide = prs.slides.add_slide(tab_slide_layout)
             shapes = tab_slide.shapes
 
+            # Add Impact, Description and Rationale in notes
+            comment_text = ""
+            if policy['Impact']:
+                comment_text += f"""
+Impact :
+{policy['Impact']}
+"""
+            if policy['Description']:
+                comment_text += f"""
+Description :
+{policy['Description']}
+"""
+            if policy['Rationale']:
+                comment_text += f"""
+Rationale :
+{policy['Rationale']}
+"""
+            notes_text_frame = tab_slide.notes_slide.notes_text_frame
+            notes_text_frame.text = comment_text
+
             cryptonit_color = RGBColor(57, 100, 0) # dark green
 
             # Place policy ID
