@@ -7,7 +7,7 @@ from Errors import throw
 from file_functions import FileFunctions
 from update_main_csv import UpdateMainCsv, policy_subdivision
 from cis_pdf_scrapper import CISPdfScrapper
-from excel_wokrbook import ExcelWorkbook
+from excel_workbook import ExcelWorkbook
 
 
 def check_arguments():
