@@ -56,7 +56,10 @@ class FileFunctions():
             This function will return a dataframe (pandas)
             containing the whole data of a CSV file.
         """
-        df = pd.read_csv(self.file, encoding='latin1')
+        try:
+            df = pd.read_csv(self.file, encoding='latin1')
+        except pd.errors.ParserError:
+            throw('An error occured while reading csv, please make sure it\'s using a good format', 'error')
         df = df.fillna('')
         df = df.astype(str)
         return df
