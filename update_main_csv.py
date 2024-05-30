@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import os
 from Errors import throw
 
 class UpdateMainCsv():
@@ -303,6 +304,10 @@ def policy_subdivision(dataframe: pd.DataFrame, base_name: str, lot_size: int):
             # on nomme le fichier
             path = base_name + "_lot" + str(i) + "-" + str(lot_size+i) + ".csv"
             if len(dataframe)>0:
+                try:
+                    open(path, 'w', encoding="utf-8")
+                except FileNotFoundError:
+                    raise Exception(f'File `{os.path.realpath(path)}` could not be created.', 'error')
                 # on enregistre le fichier
                 dataframe.iloc[i:i+lot_size, :].to_csv(path_or_buf=path,index=False)
     else :
