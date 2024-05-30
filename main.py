@@ -806,14 +806,14 @@ elif CHOSEN_TOOL == '10':
                     os.mkdir(bycategory_path)
 
                 if registry_filtered:
-                    base_name = bycategory_path + 'Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    base_name = bycategory_path + 'Registry_Based_Policies_' + category
                     new_file_finding_list_registry = new_file_finding_list.loc[(new_file_finding_list["Method"] == "Registry")]
                     policy_subdivision(new_file_finding_list_registry, base_name, LOT_SIZE)
-                    base_name = bycategory_path + 'No_Registry_Based_Policies_' + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    base_name = bycategory_path + 'No_Registry_Based_Policies_' + category
                     new_file_finding_list_no_registry = new_file_finding_list.loc[(new_file_finding_list["Method"]!= "Registry")]
                     policy_subdivision(new_file_finding_list_no_registry, base_name, LOT_SIZE)
                 else:
-                    base_name = bycategory_path + CONTEXT['ContextName'] + "_" + workshop + "_" + category
+                    base_name = bycategory_path + category
                     policy_subdivision(new_file_finding_list, base_name, LOT_SIZE)
 
     throw(f'Output was saved in \'{parent_path}\' folder.', 'low')
