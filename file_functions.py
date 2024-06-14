@@ -64,12 +64,12 @@ class FileFunctions():
         df = df.astype(str)
         return df
 
-    def read_xlsx_tracefile(self):
+    def read_xlsx_tracefile(self, header=0):
         """
             This function will return Excel sheets from trace file
         """
         df_all_policies = pd.read_excel(self.file, "All-Policies").fillna('')
-        df_contexts = pd.read_excel(self.file, "Contexts").fillna('')
+        df_contexts = pd.read_excel(self.file, "Contexts", header=header).fillna('')
 
         return df_all_policies, df_contexts
 
