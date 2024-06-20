@@ -104,6 +104,10 @@ def check_arguments():
                 -xcp, --report2csvpptx : Transfrom a report file into a csv that could help preparing slides
                     You must add -xf or --xlsx-file to specify the Excel report file path
                         ./main.py -report2csvpptx --xlsx-file report.xlsx
+              
+                -xgp, --report2gpo : Transfrom a report file choosed policies into a csv that contains GP paths
+                    You must add -xf or --xlsx-file to specify the Excel report file path
+                        ./main.py -report2gpo --xlsx-file report.xlsx
 
             Others :
                 -h, --help : show this help menu
@@ -168,6 +172,11 @@ def check_arguments():
     if any(x in xcp_args for x in sys.argv):
         chosen_tool = '11'
         return chosen_tool
+    
+    xcp_args = ['-xgp', '--report2gpo']
+    if any(x in xcp_args for x in sys.argv):
+        chosen_tool = '12'
+        return chosen_tool
 
     chosen_tool = False
     return chosen_tool
@@ -212,8 +221,9 @@ if not CHOSEN_TOOL:
         9. CSV to Excel Report File
         10. Excel Report File to CSV (Hardening)
         11. Excel Report File to CSV (Slides)
+        12. Excel Report File to CSV (GPO)
 
-    Choose your tool (1->11): """)
+    Choose your tool (1->12): """)
 
 # Add audit result to a CSV file
 if CHOSEN_TOOL == '1':
@@ -681,6 +691,7 @@ elif CHOSEN_TOOL == '9':
 
 # Excel Report File to CSV (Hardening)
 elif CHOSEN_TOOL == '10':
+    ### TODO: We don't need to ask for context finding list since it's already in sheets
     # report file
     REPORT_PATH = ''
     report_file_path_args = ['-xf', '--xlsx-file']
@@ -882,7 +893,62 @@ elif CHOSEN_TOOL == '11':
     output_csv = input('Where would you like to output the result ? (output.csv) : ')
     if output_csv == '':
         output_csv = 'output.csv'
-    result_df.to_csv(output_csv, index=False)         
+    result_df.to_csv(output_csv, index=False)
+
+# Excel Report File to CSV (GPO)
+elif CHOSEN_TOOL == '12':
+# report file
+    REPORT_PATH = ''
+    report_file_path_args = ['-xf', '--xlsx-file']
+    for report_file_path_arg in report_file_path_args:
+        for arg in sys.argv:
+            if report_file_path_arg == arg:
+                REPORT_PATH = sys.argv[sys.argv.index(arg)+1]
+    if REPORT_PATH == '':
+        REPORT_PATH = input('\nPlease enter the excel report path : ')
+    report_file = FileFunctions(REPORT_PATH)
+    report_file.file_exists()
+    df_all_policies, df_contexts = report_file.read_xlsx_tracefile(header=1)
+
+    NUMBER_OF_CONTEXTS = report_file.get_number_of_context()
+    CONTEXTS_COLUMN_NAMES = report_file.get_contexts_names()
+
+    choosed_policies_df = df_contexts[df_contexts['Choosed Policy'] == 'Yes']
+
+    columns = ['ID', 'Name', 'Severity', 'Level', 'Default Value', 'Recommended Value (CIS)', 'Group Policy Path']
+    for CONTEXT_INDEX in range(NUMBER_OF_CONTEXTS):
+        columns.insert(6, f'Context{CONTEXT_INDEX+1} - Fixed Value')
+        columns.insert(4, f'Context{CONTEXT_INDEX+1} - Previously Applied Value')
+    result_df = pd.DataFrame(columns=columns)
+
+    for index, context_row in choosed_policies_df.iterrows():
+        context_row_name = context_row['Name']
+        all_policies_row = df_all_policies[df_all_policies['Name'] == context_row_name]
+        
+        if all_policies_row.empty:
+            print(f'Could not find row {context_row_name} in All policies, skipping')
+        else:
+            # get Id, Severity, Level, Name, Default Value, Recommended Value, 
+            # each context computed value, description, impact, rationale
+            new_row = [
+                context_row['ID'],
+                context_row_name,
+                list(all_policies_row['Severity'])[0],
+                list(all_policies_row['Level'])[0].replace('(', '').replace(')', ''),
+                list(all_policies_row['DefaultValue'])[0],
+                list(all_policies_row['RecommendedValue'])[0],
+                list(all_policies_row['Remediation'])[0]
+            ]
+            for CONTEXT_INDEX in range(NUMBER_OF_CONTEXTS):
+                new_row.insert(6, context_row[f'Context{CONTEXT_INDEX+1} - Computed Value'])
+                new_row.insert(4, context_row[f'Context{CONTEXT_INDEX+1} - ComputedResult'])
+            result_df.loc[-1] = new_row
+            result_df.index = result_df.index + 1
+            result_df = result_df.sort_index()
+    output_csv = input('Where would you like to output the result ? (output.csv) : ')
+    if output_csv == '':
+        output_csv = 'output.csv'
+    result_df.to_csv(output_csv, index=False)
 
 else:
     throw('Tool selected not in list, exiting.', 'high')
