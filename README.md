@@ -64,6 +64,10 @@ This tool allows you to merge two csv files based on a column value
 
 Replace default value in csv by -NODATA-, it allows a better understanding of the actual status.
 
-### 9. Excel report file to CSV
+### 9. CSV to Excel report file
+
+This tool will transform an excel results of hardening kitty into a Excel report file
+
+### 10. Excel report file to CSV
 
 This tool will transform an excel report file into multiple csv file applicable, by context, by workshop & by category

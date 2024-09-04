@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import os
 from Errors import throw
 
 class UpdateMainCsv():
@@ -210,7 +211,7 @@ to write in this folder, exiting.",
         self.original_dataframe = self.original_dataframe.assign(Remediation=None)
         self.original_dataframe = self.original_dataframe.assign(Level=None)
 
-        for _, policy in self.original_dataframe.iterrows():
+        for index, policy in self.original_dataframe.iterrows():
             search = self.adding_dataframe.loc[self.adding_dataframe['ID'] == policy['ID']]
             # Checking ID
             if search['Level'].values.size == 0:
@@ -236,31 +237,31 @@ to write in this folder, exiting.",
 
             search_impact = search['Impact'].values
             if search_impact.size > 0:
-                policy['Impact'] = search_impact[0]
+                self.original_dataframe.at[index, 'Impact'] = search_impact[0]
 
             search_description = search['Description'].values
             if search_description.size > 0:
-                policy['Description'] = search_description[0]
+                self.original_dataframe.at[index, 'Description'] = search_description[0]
 
             search_rationale = search['Rationale'].values
             if search_rationale.size > 0:
-                policy['Rationale'] = search_rationale[0]
+                self.original_dataframe.at[index, 'Rationale'] = search_rationale[0]
 
             search_recommended_value = search['Recommended Value'].values
             if search_recommended_value.size > 0:
-                policy['ScrappedRecommendedValue'] = search_recommended_value[0]
+                self.original_dataframe.at[index, 'ScrappedRecommendedValue'] = search_recommended_value[0]
 
             search_default_value = search['Default Value'].values
             if search_default_value.size > 0:
-                policy['ScrappedDefaultValue'] = search_default_value[0]
+                self.original_dataframe.at[index, 'ScrappedDefaultValue'] = search_default_value[0]
 
             search_remediation = search['Remediation'].values
             if search_remediation.size > 0:
-                policy['Remediation'] = search_remediation[0]
+                self.original_dataframe.at[index, 'Remediation'] = search_remediation[0]
 
             search_level = search['Level'].values
             if search_level.size > 0:
-                policy['Level'] = search_level[0]
+                self.original_dataframe.at[index, 'Level'] = search_level[0]
 
         try:
             self.original_dataframe.to_csv(self.output_filepath, index=False)
@@ -301,8 +302,12 @@ def policy_subdivision(dataframe: pd.DataFrame, base_name: str, lot_size: int):
     if size>lot_size:
         for i in range(0,size,lot_size):
             # on nomme le fichier
-            path = base_name + "_lot" + str(i) + "-" + str(i+15) + ".csv"
+            path = base_name + "_lot" + str(i) + "-" + str(lot_size+i) + ".csv"
             if len(dataframe)>0:
+                try:
+                    open(path, 'w', encoding="utf-8")
+                except FileNotFoundError:
+                    raise Exception(f'File `{os.path.realpath(path)}` could not be created.', 'error')
                 # on enregistre le fichier
                 dataframe.iloc[i:i+lot_size, :].to_csv(path_or_buf=path,index=False)
     else :
